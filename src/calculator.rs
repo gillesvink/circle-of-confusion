@@ -1,5 +1,4 @@
 use crate::{Math, Settings, WorldUnit};
-use glam::Vec2;
 
 #[cfg(feature = "python-bindings")]
 use pyo3::prelude::*;
@@ -67,7 +66,7 @@ pub struct Calculator {
     settings: Settings,
     internal_focus: f32,
     world_unit_multiplier: f32,
-    depth_of_field: Vec2,
+    depth_of_field: [f32; 2],
     hyperfocal_distance: f32,
 }
 
@@ -196,21 +195,21 @@ impl Calculator {
         settings: &Settings,
         internal_focus: f32,
         world_unit_multiplier: f32,
-    ) -> Vec2 {
+    ) -> [f32; 2] {
         if settings.protect == 0.0 || internal_focus == 0.0 {
-            return Vec2::new(internal_focus, internal_focus);
+            return [internal_focus, internal_focus];
         }
         if settings.camera_data.is_some() {
-            return Vec2::new(
+            return [
                 internal_focus - ((settings.protect * 0.5) * world_unit_multiplier),
                 internal_focus + ((settings.protect * 0.5) * world_unit_multiplier),
-            );
+            ];
         }
         let normalized_focus = 1.0 / internal_focus;
-        Vec2::new(
+        [
             1.0 / (normalized_focus + (normalized_focus * (settings.protect * 0.5))),
             1.0 / (normalized_focus - (normalized_focus * (settings.protect * 0.5))),
-        )
+        ]
     }
 
     /// Convert input value to distance value.
@@ -237,16 +236,16 @@ impl Calculator {
             return distance;
         }
         let mut calculated_focal_distance = self.internal_focus;
-        let simple_point = Vec2::new(0.0, 0.0);
+        let simple_point = [0.0; 2];
         if self.depth_of_field != simple_point
-            && (distance > self.depth_of_field.x && distance < self.depth_of_field.y)
+            && (distance > self.depth_of_field[0] && distance < self.depth_of_field[1])
         {
             return 0.0;
         }
-        if distance < self.depth_of_field.x {
-            calculated_focal_distance = self.depth_of_field.x;
+        if distance < self.depth_of_field[0] {
+            calculated_focal_distance = self.depth_of_field[0];
         } else if distance > self.internal_focus {
-            calculated_focal_distance = self.depth_of_field.y;
+            calculated_focal_distance = self.depth_of_field[1];
         }
 
         calculated_focal_distance = calculated_focal_distance.min(self.hyperfocal_distance);
@@ -256,10 +255,10 @@ impl Calculator {
                 * distance
                 * (calculated_focal_distance - camera_data.focal_length));
 
-        circle_of_confusion / (Self::length(camera_data.filmback.x, camera_data.filmback.y))
+        circle_of_confusion / (Self::length(camera_data.filmback[0], camera_data.filmback[1]))
             * (Self::length(
-                camera_data.resolution.x as f32,
-                camera_data.resolution.y as f32,
+                camera_data.resolution[0] as f32,
+                camera_data.resolution[1] as f32,
             ) * 0.5)
     }
 
@@ -267,7 +266,7 @@ impl Calculator {
     /// This is not physically accurate, but gives a nice falloff.
     fn calculate_direct_map(&self, pixel_value: f32) -> f32 {
         if self.internal_focus == pixel_value
-            || (pixel_value > self.depth_of_field.x && pixel_value < self.depth_of_field.y)
+            || (pixel_value > self.depth_of_field[0] && pixel_value < self.depth_of_field[1])
         {
             return 0.0;
         }
@@ -280,19 +279,19 @@ impl Calculator {
 
         let mut calculated_value = 0.0;
         if self.internal_focus < pixel_value {
-            let calculated_focus_point = if self.depth_of_field.y == 0.0 {
+            let calculated_focus_point = if self.depth_of_field[1] == 0.0 {
                 0.0
             } else {
-                1.0 / self.depth_of_field.y
+                1.0 / self.depth_of_field[1]
             };
             calculated_value =
                 -(calculated_focus_point - converted_pixel_value) / calculated_focus_point;
         }
         if self.internal_focus > pixel_value {
-            let calculated_focus_point = if self.depth_of_field.x == 0.0 {
+            let calculated_focus_point = if self.depth_of_field[0] == 0.0 {
                 0.0
             } else {
-                1.0 / self.depth_of_field.x
+                1.0 / self.depth_of_field[0]
             };
             let calculated_near_field =
                 (converted_pixel_value - calculated_focus_point) / calculated_focus_point;

@@ -1,7 +1,5 @@
 // Data used to set the circle of confusion parameters.
 
-use glam::{UVec2, Vec2};
-
 #[cfg(feature = "python-bindings")]
 use pyo3::prelude::*;
 
@@ -55,7 +53,7 @@ pub struct CameraData {
     /// F-stop (aperture) of the camera
     pub f_stop: f32,
     /// Filmback size (width and height)
-    pub filmback: Vec2,
+    pub filmback: [f32; 2],
     /// Near field distance for depth of field
     pub near_field: f32,
     /// Far field distance for depth of field
@@ -63,7 +61,7 @@ pub struct CameraData {
     /// World unit for depth measurements
     pub world_unit: WorldUnit,
     /// Resolution camera is recording at
-    pub resolution: UVec2,
+    pub resolution: [u32; 2],
 }
 
 #[cfg_attr(feature = "python-bindings", pymethods)]
@@ -118,11 +116,11 @@ impl Default for CameraData {
         CameraData {
             focal_length: 50.0,
             f_stop: 16.0,
-            filmback: Vec2::new(24.576, 18.672),
+            filmback: [24.576, 18.672],
             near_field: 0.1,
             far_field: 10000.0,
             world_unit: WorldUnit::M,
-            resolution: UVec2::new(1920, 1080),
+            resolution: [1920, 1080],
         }
     }
 }
