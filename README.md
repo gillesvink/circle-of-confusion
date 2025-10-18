@@ -6,8 +6,17 @@
 Calculator for Circle of Confusion (CoC) to calculate the size in pixels of an area, used for depth of field processing.
 
 It's built in Rust, by default it is no-std only. 
-
 For the Python package it exposes its functions via [PyO3](https://pyo3.rs/latest/).
+
+Add the project to your Cargo.toml by using
+```bash
+cargo add circle-of-confusion
+```
+
+Or in your Python project (managed by uv, but it's just available in pip as well):
+```bash
+uv add circle-of-confusion
+```
 
 ## Usage
 The calculator is able to calculate the Circle of Confusion based on the provided settings.
