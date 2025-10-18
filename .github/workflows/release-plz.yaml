@@ -21,10 +21,9 @@ jobs:
           branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           git clone https://codeberg.org/gillesvink/circle-of-confusion.git .
           git checkout ${branch}
-          username=$(git log -1 --pretty=format:'%an')
           email=$(git log -1 --pretty=format:'%ae')
-          git config user.name '${username}'
-          git config user.email '${email}'
+          git config user.name '${{ github.actor }}'
+          git config user.email ${email}
           git remote set-url origin https://${{ secrets.CODEBERG_TOKEN }}@codeberg.org/gillesvink/circle-of-confusion.git
       - &install-rust
         name: Install Rust toolchain
