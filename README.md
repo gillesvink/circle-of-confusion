@@ -1,3 +1,6 @@
+[![CI](https://github.com/gillesvink/circle-of-confusion/actions/workflows/CI.yml/badge.svg)](https://github.com/gillesvink/circle-of-confusion/actions/workflows/CI.yml)
+
+
 # Circle of Confusion
 
 Calculator for Circle of Confusion (CoC) to calculate the size in pixels of an area, used for depth of field processing.
@@ -35,7 +38,7 @@ This calculation is based on the CoC algorithm:
 
 
 ### Examples
-It's really simple to use, you need to assemble the settings to calculate the circle of confusion. The interface is almost identical for Rust and Python. For example for camera based calculations:
+It's really simple to use, you need to assemble the settings to calculate the circle of confusion. The interface identical (besides the obvious syntax differences) for Rust and Python. For example for camera based calculations:
 
 #### Python
 ```python
