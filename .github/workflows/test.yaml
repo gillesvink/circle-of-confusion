@@ -9,17 +9,12 @@ permissions:
   contents: read
 
 jobs:
-  linux:
-    runs-on: ubuntu-22.04
-    container:
-      image: rust:1.90-trixie
+  test:
+    runs-on: ubuntu-24.04
     steps:
-      - name: Install packages
-        run: |
-          apt update
-          apt install nodejs -y
-
       - uses: actions/checkout@v4
 
       - name: Run tests
-        run: cargo test
+        run: |
+          cargo test
+          cargo test --features python-bindings
