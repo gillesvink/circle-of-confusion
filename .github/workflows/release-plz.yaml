@@ -6,10 +6,9 @@ on:
       - main
 
 jobs:
-
   # Release unpublished packages.
   release-plz-release:
-    if: ${{ github.repository_owner == 'tmp' }}
+    if: ${{ github.repository_owner == 'gillesvink' }}
     name: Release-plz release
     runs-on: ubuntu-latest
     permissions:
@@ -35,7 +34,7 @@ jobs:
         run: |
           curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
           cargo binstall release-plz
-    
+
       - name: Run release-plz
         run: release-plz release --forge gitea --git-token ${{ secrets.CODEBERG_TOKEN }}
         env:
