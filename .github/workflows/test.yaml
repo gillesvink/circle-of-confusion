@@ -16,5 +16,5 @@ jobs:
 
       - name: Run tests
         run: |
-          cargo test
+          cargo test --features no-std
           cargo test --features python-bindings
