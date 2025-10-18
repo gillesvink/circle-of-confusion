@@ -11,8 +11,6 @@ jobs:
     if: ${{ github.repository_owner == 'gillesvink' }}
     name: Release-plz release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - &checkout
         name: Checkout repository
@@ -21,9 +19,8 @@ jobs:
           branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           git clone https://codeberg.org/gillesvink/circle-of-confusion.git .
           git checkout ${branch}
-          email=$(git log -1 --pretty=format:'%ae')
-          git config user.name '${{ github.actor }}'
-          git config user.email ${email}
+          git config user.email "$(git log -1 --pretty=format:'%ae')"
+          git config user.name "${{ github.actor }}"
           git remote set-url origin https://${{ secrets.CODEBERG_TOKEN }}@codeberg.org/gillesvink/circle-of-confusion.git
       - &install-rust
         name: Install Rust toolchain
