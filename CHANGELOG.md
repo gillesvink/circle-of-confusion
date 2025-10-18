@@ -11,17 +11,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Other
 
-- Add no-std feature
-- Add install instructions in readme
-- Fix git credentials
-- Fix username
-- Set repository owner name
-- Add release-plz
-- Add tests ci
-- Add badge
-- Add detailed readme
-- Add readme
-- Remove glam dependency
-- Remove main.py
-- Initial commit
-- Initial commit
+- Initial release

@@ -5,15 +5,7 @@ edition = "2021"
 license = "EUPL-1.2"
 description = "Calculator for Circle of Confusion (CoC) to calculate the size in pixels of an area, used for depth of field processing"
 repository = "https://codeberg.org/gillesvink/circle-of-confusion"
-keywords = [
-    "circle",
-    "of",
-    "confusion",
-    "coc",
-    "camera",
-    "photography",
-    "physically",
-]
+keywords = ["coc", "camera", "photography", "physically"]
 categories = ["algorithms", "mathematics", "no-std", "no-std::no-alloc"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
