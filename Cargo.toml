@@ -3,8 +3,10 @@ name = "circle-of-confusion"
 version = "0.1.0"
 edition = "2021"
 license = "EUPL-1.2"
+authors = ["Gilles Vink <gillesvink@noreply.codeberg.org>"]
 description = "Calculator for Circle of Confusion (CoC) to calculate the size in pixels of an area, used for depth of field processing"
 repository = "https://codeberg.org/gillesvink/circle-of-confusion"
+documentation = "https://docs.rs/circle-of-confusion"
 keywords = ["coc", "camera", "photography", "physically"]
 categories = ["algorithms", "mathematics", "no-std", "no-std::no-alloc"]
 

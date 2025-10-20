@@ -1,7 +1,12 @@
-[![CI](https://github.com/gillesvink/circle-of-confusion/actions/workflows/CI.yml/badge.svg)](https://github.com/gillesvink/circle-of-confusion/actions/workflows/CI.yml)
 
+[![Build Status](https://github.com/gillesvink/circle-of-confusion/actions/workflows/test.yaml/badge.svg)](https://github.com/gillesvink/circle-of-confusion/actions/workflows/test.yml) 
+[![Crates.io License](https://img.shields.io/crates/l/circle-of-confusion)](https://crates.io/crates/circle-of-confusion) 
+[![Version](https://img.shields.io/crates/v/circle-of-confusion)](https://crates.io/crates/circle-of-confusion) 
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/circle-of-confusion)](https://pypi.org/project/circle-of-confusion/) 
+[![Python Versions](https://img.shields.io/pypi/pyversions/circle-of-confusion)](https://pypi.org/project/circle-of-confusion/) 
 
 # Circle of Confusion
+
 
 Calculator for Circle of Confusion (CoC) to calculate the size in pixels of an area, used for depth of field processing.
 

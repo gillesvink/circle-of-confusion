@@ -6,18 +6,45 @@ build-backend = "maturin"
 name = "circle-of-confusion"
 requires-python = ">=3.8"
 classifiers = [
+    'License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)',
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
+    "Topic :: Scientific/Engineering",
+    "Topic :: Multimedia :: Graphics",
 ]
 dynamic = ["version"]
+description = "Calculator for Circle of Confusion (CoC) to calculate the size in pixels of an area, used for depth of field processing."
+readme = "README.md"
+license = "EUPL-1.2"
+authors = [{ name = "Gilles Vink", email = "gillesvink@noreply.codeberg.org" }]
+maintainers = [
+    { name = "Gilles Vink", email = "gillesvink@noreply.codeberg.org" },
+]
+
+[project.urls]
+Homepage = "https://codeberg.org/gillesvink/circle-of-confusion"
+"Bug Tracker" = "https://codeberg.org/gillesvink/circle-of-confusion/issues"
+Changelog = "https://codeberg.org/gillesvink/circle-of-confusion/src/branch/main/CHANGELOG.md"
+
 [tool.maturin]
 features = ["pyo3/extension-module", "python-bindings"]
 
 [tool.uv]
 cache-keys = [
     { file = "pyproject.toml" },
-    { file = "rust/Cargo.toml" },
+    { file = "Cargo.toml" },
     { file = "**/*.rs" },
 ]
 
