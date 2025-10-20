@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1](https://codeberg.org/gillesvink/circle-of-confusion/compare/v0.1.0...v0.1.1) - 2025-10-20
+
+### Other
+
+- Fix tests link and change name for license in readme
+- Improve Readme, pypi config and Cargo.toml
+
 ## [0.1.0](https://codeberg.org/gillesvink/circle-of-confusion/releases/tag/v0.1.0) - 2025-10-18
 
 ### Other
