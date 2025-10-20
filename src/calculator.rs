@@ -109,7 +109,7 @@ impl Calculator {
         } else {
             converted_value = self.calculate_direct_map(converted_value);
         }
-        -converted_value.clamp(-self.settings.max_size, self.settings.max_size)
+        converted_value.clamp(-self.settings.max_size, self.settings.max_size)
     }
 }
 
@@ -255,11 +255,11 @@ impl Calculator {
                 * distance
                 * (calculated_focal_distance - camera_data.focal_length));
 
-        circle_of_confusion / (Self::length(camera_data.filmback[0], camera_data.filmback[1]))
+        -(circle_of_confusion / (Self::length(camera_data.filmback[0], camera_data.filmback[1]))
             * (Self::length(
                 camera_data.resolution[0] as f32,
                 camera_data.resolution[1] as f32,
-            ) * 0.5)
+            ) * 0.5))
     }
 
     /// Calculate the Circle of Confusion based on the manual values selected.
@@ -285,7 +285,7 @@ impl Calculator {
                 1.0 / self.depth_of_field[1]
             };
             calculated_value =
-                -(calculated_focus_point - converted_pixel_value) / calculated_focus_point;
+                (calculated_focus_point - converted_pixel_value) / calculated_focus_point;
         }
         if self.internal_focus > pixel_value {
             let calculated_focus_point = if self.depth_of_field[0] == 0.0 {
@@ -296,7 +296,7 @@ impl Calculator {
             let calculated_near_field =
                 (converted_pixel_value - calculated_focus_point) / calculated_focus_point;
             calculated_value =
-                calculated_near_field.min(self.settings.max_size / self.settings.size)
+                -calculated_near_field.min(self.settings.max_size / self.settings.size)
         }
         calculated_value * self.settings.size
     }

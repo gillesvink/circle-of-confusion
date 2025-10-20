@@ -1,9 +1,4 @@
 
-[![Tests](https://github.com/gillesvink/circle-of-confusion/actions/workflows/test.yaml/badge.svg)](https://github.com/gillesvink/circle-of-confusion/actions/workflows/test.yaml) 
-[![License](https://img.shields.io/crates/l/circle-of-confusion)](https://crates.io/crates/circle-of-confusion) 
-[![Version](https://img.shields.io/crates/v/circle-of-confusion)](https://crates.io/crates/circle-of-confusion) 
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/circle-of-confusion)](https://pypi.org/project/circle-of-confusion/) 
-[![Python Versions](https://img.shields.io/pypi/pyversions/circle-of-confusion)](https://pypi.org/project/circle-of-confusion/) 
 
 # Circle of Confusion
 
@@ -81,7 +76,7 @@ settings = Settings(
 )
 calculator = Calculator(settings)
 result = calculator.calculate(10.0) # input distance value from Z-depth
-assert result == 11.93532943725586
+assert result == -11.93532943725586
 ```
 
 #### Rust
@@ -109,6 +104,6 @@ fn main() {
     };
     let calculator = Calculator::new(settings);
     let result = calculator.calculate(10.0); // input distance value from Z-depth
-    assert_eq!(result, 11.935329);
+    assert_eq!(result, -11.935329);
 }
 ```
