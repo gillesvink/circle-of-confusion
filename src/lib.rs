@@ -1,3 +1,4 @@
+#![doc = include_str!("../README.md")]
 #![cfg_attr(all(feature = "no-std", not(feature = "python-bindings")), no_std)]
 
 #[cfg(all(feature = "no-std", feature = "python-bindings"))]
