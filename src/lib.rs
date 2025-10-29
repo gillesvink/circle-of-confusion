@@ -1,8 +1,5 @@
 #![doc = include_str!("../README.md")]
-#![cfg_attr(all(feature = "no-std", not(feature = "python-bindings")), no_std)]
-
-#[cfg(all(feature = "no-std", feature = "python-bindings"))]
-compile_error!("Features `no-std` and `python-bindings` are incompatible. Disable one of them.");
+#![cfg_attr(not(feature = "std"), no_std)]
 
 mod calculator;
 mod settings;

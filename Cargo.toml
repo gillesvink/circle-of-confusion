@@ -10,15 +10,11 @@ documentation = "https://docs.rs/circle-of-confusion"
 keywords = ["coc", "camera", "photography", "physically"]
 categories = ["algorithms", "mathematics", "no-std", "no-std::no-alloc"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[lib]
-name = "circle_of_confusion"
-crate-type = ["cdylib"]
 
 [features]
-default = []
-no-std = []
-python-bindings = ["dep:pyo3"]
+default = ["std"]
+std = []
+python-bindings = ["dep:pyo3", "std"]
 
 [dependencies]
 libm = ">=0.2.11, < 0.3"
@@ -27,9 +23,3 @@ pyo3 = { version = ">=0.25.0, < 0.26", optional = true }
 [dev-dependencies]
 rstest = "0.25.0"
 assert_approx_eq = "1.1.0"
-
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
