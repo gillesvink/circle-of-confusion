@@ -10,6 +10,8 @@ documentation = "https://docs.rs/circle-of-confusion"
 keywords = ["coc", "camera", "photography", "physically"]
 categories = ["algorithms", "mathematics", "no-std", "no-std::no-alloc"]
 
+[lib]
+name = "circle_of_confusion"
 
 [features]
 default = ["std"]
