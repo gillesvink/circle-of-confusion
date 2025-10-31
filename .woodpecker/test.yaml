@@ -1,0 +1,15 @@
+when:
+  event: [push, manual]
+  path:
+    include: ["*.rs", "*.toml"]
+steps:
+  test_rust:
+    image: rust
+    commands:
+      - cargo test --no-default-features --release
+      - cargo test --features python-bindings --release
+
+  test_python:
+    image: ghcr.io/astral-sh/uv:debian
+    commands:
+      - uv run pytest
