@@ -6,6 +6,7 @@ steps:
   test_rust:
     image: rust
     commands:
+      - apt update && apt install python3-dev -y
       - cargo test --no-default-features --release
       - cargo test --features python-bindings --release
 
