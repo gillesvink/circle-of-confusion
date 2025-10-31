@@ -1,4 +1,4 @@
-[![Tests](https://ci.codeberg.org/api/badges/15490/status.svg)](https://ci.codeberg.org/repos/15490)
+[![Tests](https://ci.codeberg.org/api/badges/15493/status.svg)](https://ci.codeberg.org/repos/15493)
 [![License](https://img.shields.io/crates/l/circle-of-confusion)](https://crates.io/crates/circle-of-confusion) 
 [![Version](https://img.shields.io/crates/v/circle-of-confusion)](https://crates.io/crates/circle-of-confusion) 
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/circle-of-confusion)](https://pypi.org/project/circle-of-confusion/) 
