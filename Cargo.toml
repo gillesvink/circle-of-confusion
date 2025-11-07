@@ -16,7 +16,7 @@ crate-type = ["cdylib", "rlib", "staticlib"]
 
 
 [features]
-default = ["std", "wasm-bindings"]
+default = ["std"]
 std = []
 wasm-bindings = ["dep:wasm-bindgen"]
 python-bindings = ["dep:pyo3", "std"]

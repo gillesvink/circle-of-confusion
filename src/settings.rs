@@ -14,7 +14,9 @@ pub struct Filmback {
     pub y: f32,
 }
 
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 impl Filmback {
+    #[cfg_attr(feature = "wasm-bindings", wasm_bindgen(constructor))]
     pub fn new(x: f32, y: f32) -> Self {
         Self { x, y }
     }
@@ -29,7 +31,9 @@ pub struct Resolution {
     pub y: u32,
 }
 
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 impl Resolution {
+    #[cfg_attr(feature = "wasm-bindings", wasm_bindgen(constructor))]
     pub fn new(x: u32, y: u32) -> Self {
         Self { x, y }
     }
