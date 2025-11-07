@@ -3,7 +3,11 @@ use crate::{Math, Settings, WorldUnit};
 #[cfg(feature = "python-bindings")]
 use pyo3::prelude::*;
 
+#[cfg(feature = "wasm-bindings")]
+use wasm_bindgen::prelude::*;
+
 #[cfg_attr(feature = "python-bindings", pyclass)]
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 /// Calculator that is able to calculate the Circle of Confusion based on the provided settings.
 ///
 /// The size in px is the radius of the convolution.
@@ -51,11 +55,12 @@ use pyo3::prelude::*;
 ///     math: Math::REAL,
 ///     focal_plane: 30.0,
 ///     max_size: 100.0,
-///     camera_data: Some(CameraData {
+///     camera_data: CameraData {
 ///         f_stop: 2.0,
 ///         focal_length: 100.0,
 ///         ..Default::default()
-///     }),
+///     },
+///     use_camera_data: true,
 ///     ..Default::default()
 /// };
 /// let calculator = Calculator::new(settings);
@@ -70,6 +75,7 @@ pub struct Calculator {
     hyperfocal_distance: f32,
 }
 
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 #[cfg_attr(feature = "python-bindings", pymethods)]
 impl Calculator {
     #[cfg(feature = "python-bindings")]
@@ -102,7 +108,7 @@ impl Calculator {
     pub fn calculate(&self, value: f32) -> f32 {
         let mut converted_value = Self::convert_value_to_distance(value, &self.settings.math);
 
-        if self.settings.camera_data.is_some() {
+        if self.settings.use_camera_data {
             converted_value *= self.world_unit_multiplier;
             converted_value = self.calculate_circle_of_confusion(converted_value);
             converted_value *= self.settings.pixel_aspect;
@@ -113,7 +119,9 @@ impl Calculator {
     }
 }
 
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 impl Calculator {
+    #[cfg_attr(feature = "wasm-bindings", wasm_bindgen(constructor))]
     /// Create a new instance of the Calculator with the specified settings.
     ///
     /// Automatically calculates all necessary values for calculations.
@@ -144,11 +152,10 @@ impl Calculator {
     /// More information can be found here:
     /// https://resources.wolframcloud.com/FormulaRepository/resources/Zeiss-Formula
     fn calculate_zeiss_formula(settings: &Settings) -> f32 {
-        let camera_data = match settings.camera_data {
-            Some(data) => data,
-            None => return 1.0,
-        };
-        Self::length(camera_data.filmback[0], camera_data.filmback[1]) / 1730.0
+        Self::length(
+            settings.camera_data.filmback.x,
+            settings.camera_data.filmback.y,
+        ) / 1730.0
     }
 
     /// Calculate the distance where it does not matter
@@ -159,19 +166,15 @@ impl Calculator {
     /// More information:
     /// https://www.watchprosite.com/editors-picks/using-the-zeiss-formula-to-understand-the-circle-of-confusion/1278.1127636.8608906/
     fn calculate_hyperfocal_distance(settings: &Settings, zeiss_formula: f32) -> f32 {
-        let camera_data = match settings.camera_data {
-            Some(data) => data,
-            None => return 0.0, // for non-camera-data things we just use zero
-        };
-        (libm::powf(camera_data.focal_length, 2.0) / (camera_data.f_stop * zeiss_formula))
-            + camera_data.focal_length
+        (libm::powf(settings.camera_data.focal_length, 2.0) / (settings.camera_data.f_stop * zeiss_formula))
+            + settings.camera_data.focal_length
     }
 
     /// Map the world unit from the settings to a multiplication value
     fn get_world_unit_multiplier(settings: &Settings) -> f32 {
-        let world_unit = match settings.camera_data {
-            Some(data) => data.world_unit,
-            None => return 1.0,
+        let world_unit = match settings.use_camera_data {
+            true => settings.camera_data.world_unit,
+            false => return 1.0,
         };
         match world_unit {
             WorldUnit::MM => 1.0,
@@ -199,7 +202,7 @@ impl Calculator {
         if settings.protect == 0.0 || internal_focus == 0.0 {
             return [internal_focus, internal_focus];
         }
-        if settings.camera_data.is_some() {
+        if settings.use_camera_data {
             return [
                 internal_focus - ((settings.protect * 0.5) * world_unit_multiplier),
                 internal_focus + ((settings.protect * 0.5) * world_unit_multiplier),
@@ -226,11 +229,8 @@ impl Calculator {
     /// Apply the Circle of Confusion algorithm to the distance, to calculate the disc
     /// size of confusion which a real camera would also have.
     fn calculate_circle_of_confusion(&self, distance: f32) -> f32 {
-        let camera_data = match self.settings.camera_data {
-            Some(data) => data,
-            None => {
-                return 0.0;
-            }
+        if !self.settings.use_camera_data {
+            return 0.0;
         };
         if distance == 0.0 {
             return distance;
@@ -250,15 +250,15 @@ impl Calculator {
 
         calculated_focal_distance = calculated_focal_distance.min(self.hyperfocal_distance);
         let circle_of_confusion = ((calculated_focal_distance - distance)
-            * libm::powf(camera_data.focal_length, 2.0))
-            / (camera_data.f_stop
+            * libm::powf(self.settings.camera_data.focal_length, 2.0))
+            / (self.settings.camera_data.f_stop
                 * distance
-                * (calculated_focal_distance - camera_data.focal_length));
+                * (calculated_focal_distance - self.settings.camera_data.focal_length));
 
-        -(circle_of_confusion / (Self::length(camera_data.filmback[0], camera_data.filmback[1]))
+        -(circle_of_confusion / (Self::length(self.settings.camera_data.filmback.x, self.settings.camera_data.filmback.y))
             * (Self::length(
-                camera_data.resolution[0] as f32,
-                camera_data.resolution[1] as f32,
+                self.settings.camera_data.resolution.x as f32,
+                self.settings.camera_data.resolution.y as f32,
             ) * 0.5))
     }
 
@@ -373,7 +373,8 @@ mod tests {
             math: Math::REAL,
             focal_plane: 10.0,
             max_size: 100.0,
-            camera_data: Some(CameraData::default()),
+            camera_data: CameraData::default(),
+            use_camera_data: true,
             ..Default::default()
         },
         0.075
@@ -384,12 +385,12 @@ mod tests {
             math: Math::REAL,
             focal_plane: 15.0,
             max_size: 10.0,
-            camera_data: Some(
-                CameraData {
+            camera_data: CameraData {
                     f_stop: 2.0,
                     ..Default::default()
                 }
-            ),
+            ,
+            use_camera_data: true,
             ..Default::default()
         },
         -1.4819534
@@ -400,13 +401,13 @@ mod tests {
             math: Math::REAL,
             focal_plane: 30.0,
             max_size: 100.0,
-            camera_data: Some(
-                CameraData {
+            camera_data: CameraData {
                     f_stop: 2.0,
                     focal_length: 100.0,
                     ..Default::default()
                 }
-            ),
+            ,
+            use_camera_data: true,
             ..Default::default()
         },
         -11.935
@@ -417,13 +418,14 @@ mod tests {
             math: Math::REAL,
             focal_plane: 2.4,
             max_size: 50.0,
-            camera_data: Some(
+            camera_data: 
                 CameraData {
                     f_stop: 2.0,
                     focal_length: 100.0,
                     ..Default::default()
                 }
-            ),
+            ,
+            use_camera_data: true,
             ..Default::default()
         },
         50.0

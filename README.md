@@ -85,17 +85,17 @@ assert result == -11.93532943725586
 
 #### Rust
 ```rust
-use circle_of_confusion::{Calculator, Settings, Math, CameraData, WorldUnit};
+use circle_of_confusion::{Calculator, Settings, Math, CameraData, WorldUnit, Filmback, Resolution};
 
 fn main() {
     let camera_data = CameraData {
         focal_length: 100.0,
         f_stop: 2.0,
-        filmback: [24.576, 18.672],
+        filmback: Filmback::new(24.576, 18.672),
         near_field: 0.1,
         far_field: 10000.0,
         world_unit: WorldUnit::M,
-        resolution: [1920, 1080],
+        resolution: Resolution::new(1920, 1080),
     };
     let settings = Settings {
         size: 10.0,
@@ -104,7 +104,8 @@ fn main() {
         focal_plane: 30.0,
         protect: 0.0,
         pixel_aspect: 1.0,
-        camera_data: Some(camera_data),
+        camera_data: camera_data,
+        use_camera_data: true,
     };
     let calculator = Calculator::new(settings);
     let result = calculator.calculate(10.0); // input distance value from Z-depth

@@ -5,7 +5,7 @@ mod calculator;
 mod settings;
 
 pub use crate::calculator::Calculator;
-pub use crate::settings::{CameraData, Math, Settings, WorldUnit};
+pub use crate::settings::{CameraData, Math, Settings, WorldUnit, Filmback, Resolution};
 
 #[cfg(feature = "python-bindings")]
 use pyo3::prelude::*;

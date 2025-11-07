@@ -3,9 +3,43 @@
 #[cfg(feature = "python-bindings")]
 use pyo3::prelude::*;
 
+#[cfg(feature = "wasm-bindings")]
+use wasm_bindgen::prelude::*;
+
+#[derive(PartialEq, Clone, Copy, Debug)]
+#[cfg_attr(feature = "python-bindings", pyclass)]
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
+pub struct Filmback {
+    pub x: f32,
+    pub y: f32,
+}
+
+impl Filmback {
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
+
+
+#[derive(PartialEq, Clone, Copy, Debug)]
+#[cfg_attr(feature = "python-bindings", pyclass)]
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
+pub struct Resolution {
+    pub x: u32,
+    pub y: u32,
+}
+
+impl Resolution {
+    pub fn new(x: u32, y: u32) -> Self {
+        Self { x, y }
+    }
+}
+
+
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 #[repr(i32)]
 #[cfg_attr(feature = "python-bindings", pyclass)]
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 /// World unit that specifies the unit for the depth channel
 ///
 /// This enum defines the units that can be used for depth channel measurements.
@@ -28,6 +62,7 @@ pub enum WorldUnit {
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 #[repr(i32)]
 #[cfg_attr(feature = "python-bindings", pyclass)]
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 /// Math mode of provided depth channel
 ///
 /// This enum defines how the depth channel's mathematical representation
@@ -43,6 +78,7 @@ pub enum Math {
 #[repr(C)]
 #[derive(Clone, Copy)]
 #[cfg_attr(feature = "python-bindings", pyclass)]
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 /// Camera parameters that are used when using the camera-based circle of confusion
 ///
 /// This struct contains camera-specific parameters that are used to calculate
@@ -53,7 +89,7 @@ pub struct CameraData {
     /// F-stop (aperture) of the camera
     pub f_stop: f32,
     /// Filmback size (width and height)
-    pub filmback: [f32; 2],
+    pub filmback: Filmback,
     /// Near field distance for depth of field
     pub near_field: f32,
     /// Far field distance for depth of field
@@ -61,7 +97,7 @@ pub struct CameraData {
     /// World unit for depth measurements
     pub world_unit: WorldUnit,
     /// Resolution camera is recording at
-    pub resolution: [u32; 2],
+    pub resolution: Resolution,
 }
 
 #[cfg_attr(feature = "python-bindings", pymethods)]
@@ -88,25 +124,26 @@ impl CameraData {
         }
     }
 }
-
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 impl CameraData {
+    #[cfg_attr(feature = "wasm-bindings", wasm_bindgen(constructor))]
     pub fn new(
         focal_length: f32,
         f_stop: f32,
-        filmback: [f32; 2],
+        filmback: Filmback,
         near_field: f32,
         far_field: f32,
         world_unit: WorldUnit,
-        resolution: [u32; 2],
+        resolution: Resolution,
     ) -> Self {
         Self {
             focal_length,
             f_stop,
-            filmback: filmback.into(),
+            filmback,
             near_field,
             far_field,
             world_unit,
-            resolution: resolution.into(),
+            resolution,
         }
     }
 }
@@ -116,11 +153,11 @@ impl Default for CameraData {
         CameraData {
             focal_length: 50.0,
             f_stop: 16.0,
-            filmback: [24.576, 18.672],
+            filmback: Filmback::new(24.576, 18.672),
             near_field: 0.1,
             far_field: 10000.0,
             world_unit: WorldUnit::M,
-            resolution: [1920, 1080],
+            resolution: Resolution::new(1920, 1080),
         }
     }
 }
@@ -128,6 +165,7 @@ impl Default for CameraData {
 #[repr(C)]
 #[derive(Clone, Copy)]
 #[cfg_attr(feature = "python-bindings", pyclass)]
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 /// Settings for the circle of confusion calculation.
 ///
 /// This struct contains all the parameters needed to calculate the circle of confusion.
@@ -145,7 +183,9 @@ pub struct Settings {
     /// Pixel aspect ratio
     pub pixel_aspect: f32,
     /// Camera parameters
-    pub camera_data: Option<CameraData>,
+    pub camera_data: CameraData,
+    /// Flag if camera data should be used. Not using Option<> as this isn't ffi compatible.
+    pub use_camera_data: bool,
 }
 
 #[cfg_attr(feature = "python-bindings", pymethods)]
@@ -173,7 +213,9 @@ impl Settings {
     }
 }
 
+#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 impl Settings {
+    #[cfg_attr(feature = "wasm-bindings", wasm_bindgen(constructor))]
     pub fn new(
         size: f32,
         max_size: f32,
@@ -187,7 +229,8 @@ impl Settings {
             size,
             max_size,
             math,
-            camera_data,
+            camera_data: camera_data.unwrap_or_default(),
+            use_camera_data: camera_data.is_some(),
             focal_plane,
             protect,
             pixel_aspect,
@@ -201,7 +244,8 @@ impl Default for Settings {
             math: Math::OneDividedByZ,
             size: 5.0,
             max_size: 10.0,
-            camera_data: None,
+            camera_data: CameraData::default(),
+            use_camera_data: false,
             focal_plane: 0.0,
             protect: 0.0,
             pixel_aspect: 1.0,

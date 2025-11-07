@@ -12,15 +12,19 @@ categories = ["algorithms", "mathematics", "no-std", "no-std::no-alloc"]
 
 [lib]
 name = "circle_of_confusion"
+crate-type = ["cdylib", "rlib", "staticlib"]
+
 
 [features]
-default = ["std"]
+default = ["std", "wasm-bindings"]
 std = []
+wasm-bindings = ["dep:wasm-bindgen"]
 python-bindings = ["dep:pyo3", "std"]
 
 [dependencies]
 libm = ">=0.2.11, < 0.3"
 pyo3 = { version = ">=0.25.0, < 0.26", optional = true }
+wasm-bindgen = { version = "0.2.105", optional = true }
 
 [dev-dependencies]
 rstest = "0.25.0"
