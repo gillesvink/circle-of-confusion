@@ -25,6 +25,7 @@ python-bindings = ["dep:pyo3", "std"]
 libm = ">=0.2.11, < 0.3"
 pyo3 = { version = ">=0.25.0, < 0.26", optional = true }
 wasm-bindgen = { version = "0.2.105", optional = true }
+wit-bindgen = "0.47.0"
 
 [dev-dependencies]
 rstest = "0.25.0"
