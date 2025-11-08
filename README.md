@@ -72,7 +72,7 @@ camera_data = CameraData(
 settings = Settings(
     size=10.0,
     max_size=100.0,
-    math=Math.REAL,
+    math=Math.Real,
     focal_plane=30.0,
     protect=0.0,
     pixel_aspect=1.0,
@@ -100,7 +100,7 @@ fn main() {
     let settings = Settings {
         size: 10.0,
         max_size: 100.0,
-        math: Math::REAL,
+        math: Math::Real,
         focal_plane: 30.0,
         protect: 0.0,
         pixel_aspect: 1.0,

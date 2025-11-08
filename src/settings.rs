@@ -51,17 +51,17 @@ impl Resolution {
 /// The unit determines how depth values are interpreted in the rendering process.
 pub enum WorldUnit {
     /// Millimeters
-    MM,
+    Mm,
     /// Centimeters
-    CM,
+    Cm,
     /// Decimeters
-    DM,
+    Dm,
     /// Meters
     M,
     /// Inches
-    INCH,
+    In,
     /// Feet
-    FT,
+    Ft,
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
@@ -76,7 +76,7 @@ pub enum WorldUnit {
 /// generates the depth information.
 pub enum Math {
     /// Real depth values
-    REAL,
+    Real,
     /// One divided by Z (inverse depth)
     OneDividedByZ,
 }
@@ -189,9 +189,7 @@ pub struct Settings {
     /// Pixel aspect ratio
     pub pixel_aspect: f32,
     /// Camera parameters
-    pub camera_data: CameraData,
-    /// Flag if camera data should be used. Not using Option<> as this isn't ffi compatible.
-    pub use_camera_data: bool,
+    pub camera_data: Option<CameraData>,
 }
 
 #[cfg_attr(feature = "python-bindings", pymethods)]
@@ -235,8 +233,7 @@ impl Settings {
             size,
             max_size,
             math,
-            camera_data: camera_data.unwrap_or_default(),
-            use_camera_data: camera_data.is_some(),
+            camera_data,
             focal_plane,
             protect,
             pixel_aspect,
@@ -250,8 +247,7 @@ impl Default for Settings {
             math: Math::OneDividedByZ,
             size: 5.0,
             max_size: 10.0,
-            camera_data: CameraData::default(),
-            use_camera_data: false,
+            camera_data: None,
             focal_plane: 0.0,
             protect: 0.0,
             pixel_aspect: 1.0,
