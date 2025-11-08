@@ -55,12 +55,11 @@ use wasm_bindgen::prelude::*;
 ///     math: Math::Real,
 ///     focal_plane: 30.0,
 ///     max_size: 100.0,
-///     camera_data: CameraData {
+///     camera_data: Some(CameraData {
 ///         f_stop: 2.0,
 ///         focal_length: 100.0,
 ///         ..Default::default()
-///     },
-///     use_camera_data: true,
+///     }),
 ///     ..Default::default()
 /// };
 /// let calculator = Calculator::new(settings);

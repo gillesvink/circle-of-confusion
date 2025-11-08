@@ -104,8 +104,7 @@ fn main() {
         focal_plane: 30.0,
         protect: 0.0,
         pixel_aspect: 1.0,
-        camera_data: camera_data,
-        use_camera_data: true,
+        camera_data: Some(camera_data),
     };
     let calculator = Calculator::new(settings);
     let result = calculator.calculate(10.0); // input distance value from Z-depth
