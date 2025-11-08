@@ -16,8 +16,9 @@ crate-type = ["cdylib", "rlib", "staticlib"]
 
 
 [features]
-default = ["std"]
+default = ["wasi"]
 std = []
+wasi = ["dep:wit-bindgen"]
 wasm-bindings = ["dep:wasm-bindgen"]
 python-bindings = ["dep:pyo3", "std"]
 
@@ -25,7 +26,7 @@ python-bindings = ["dep:pyo3", "std"]
 libm = ">=0.2.11, < 0.3"
 pyo3 = { version = ">=0.25.0, < 0.26", optional = true }
 wasm-bindgen = { version = "0.2.105", optional = true }
-wit-bindgen = "0.47.0"
+wit-bindgen = {version = "0.47.0", optional = true}
 
 [dev-dependencies]
 rstest = "0.25.0"

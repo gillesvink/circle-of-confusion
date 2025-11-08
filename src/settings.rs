@@ -6,6 +6,7 @@ use pyo3::prelude::*;
 #[cfg(feature = "wasm-bindings")]
 use wasm_bindgen::prelude::*;
 
+
 #[derive(PartialEq, Clone, Copy, Debug)]
 #[cfg_attr(feature = "python-bindings", pyclass)]
 #[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
@@ -256,3 +257,4 @@ impl Default for Settings {
         }
     }
 }
+
