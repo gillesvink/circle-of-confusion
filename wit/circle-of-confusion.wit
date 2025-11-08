@@ -1,0 +1,116 @@
+package codeberg:circle-of-confusion;
+
+interface settings {
+  /**
+  Filmback object that stores the width and height of sensor
+  */
+  record filmback {
+    x: f32,
+    y: f32,
+  }
+
+  /**
+  Resolution object that stores the width and height
+  */
+  record resolution {
+    x: u32,
+    y: u32,
+  }
+
+
+  /**
+  Math mode of provided depth channel
+
+  This enum defines how the depth channel's mathematical representation
+  should be interpreted. The mode is specified by the render engine that
+  generates the depth information.
+  */
+  enum world-unit {
+    /// Millimeters
+    mm,
+    /// Centimeters
+    cm,
+    /// Decimeters
+    dm,
+    /// Meters
+    m,
+    /// Inches
+    inch,
+    /// Feet
+    ft,
+  }
+
+  /**
+  Math mode of provided depth channel
+
+  This enum defines how the depth channel's mathematical representation
+  should be interpreted. The mode is specified by the render engine that
+  generates the depth information.
+  */
+  enum math {
+    /// Real depth values
+    real,
+    /// One divided by Z (inverse depth)
+    one-divided-by-z,
+  }
+
+  /**
+  Camera parameters that are used when using the camera-based circle of confusion
+
+  This struct contains camera-specific parameters that are used to calculate
+  circle of confusion.
+  */
+  record camera-data {
+    /// Focal length of the camera lens
+    focal-length: f32,
+    /// F-stop (aperture) of the camera
+    f-stop: f32,
+    /// Filmback size (width and height)
+    filmback: filmback,
+    /// Near field distance for depth of field
+    near-field: f32,
+    /// Far field distance for depth of field
+    far-field: f32,
+    /// World unit for depth measurements
+    world-unit: world-unit,
+    /// Resolution camera is recording at
+    resolution: resolution,
+  }
+
+  /**
+  Settings for the circle of confusion calculation.
+
+  This struct contains all the parameters needed to calculate the circle of confusion.
+  */
+  record settings {
+    /// Base size for circle of confusion
+    size: f32,
+    /// Maximum size for circle of confusion (clamped)
+    max-size: f32,
+    /// Mathematical interpretation of depth
+    math: math,
+    /// Focal plane position
+    focal-plane: f32,
+    /// Protection value for circle of confusion, this adds a region that has a CoC of zero.
+    protect: f32,
+    /// Pixel aspect ratio
+    pixel-aspect: f32,
+    /// Camera parameters
+    camera-data: option<camera-data>,
+  }
+
+
+}
+
+interface calculator {
+  use settings.{settings};
+  resource calculator {
+    constructor(settings: settings);
+    calculate: func(value: f32) -> f32;
+  }
+}
+
+world circle-of-confusion {
+  export settings;
+  export calculator;
+}
