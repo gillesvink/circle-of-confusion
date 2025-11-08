@@ -16,14 +16,16 @@ crate-type = ["cdylib", "rlib", "staticlib"]
 
 
 [features]
-default = ["std", "wasm-bindings"]
+default = ["std"]
 std = []
+serde = ["dep:serde"]
 wasm-bindings = ["dep:wasm-bindgen"]
 python-bindings = ["dep:pyo3", "std"]
 
 [dependencies]
 libm = ">=0.2.11, < 0.3"
 pyo3 = { version = ">=0.25.0, < 0.26", optional = true }
+serde = { version = "1.0.228", features = ["derive"], optional = true}
 wasm-bindgen = { version = "0.2.105", optional = true }
 
 [dev-dependencies]

@@ -1,4 +1,6 @@
 // Data used to set the circle of confusion parameters.
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "python-bindings")]
 use pyo3::prelude::*;
@@ -7,6 +9,7 @@ use pyo3::prelude::*;
 use wasm_bindgen::prelude::*;
 
 #[derive(PartialEq, Clone, Copy, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "python-bindings", pyclass)]
 #[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 pub struct Filmback {
@@ -22,6 +25,7 @@ impl Filmback {
 
 
 #[derive(PartialEq, Clone, Copy, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "python-bindings", pyclass)]
 #[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 pub struct Resolution {
@@ -37,6 +41,7 @@ impl Resolution {
 
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(i32)]
 #[cfg_attr(feature = "python-bindings", pyclass)]
 #[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
@@ -60,6 +65,7 @@ pub enum WorldUnit {
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(i32)]
 #[cfg_attr(feature = "python-bindings", pyclass)]
 #[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
@@ -75,8 +81,8 @@ pub enum Math {
     OneDividedByZ,
 }
 
-#[repr(C)]
 #[derive(Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "python-bindings", pyclass)]
 #[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 /// Camera parameters that are used when using the camera-based circle of confusion
@@ -116,11 +122,11 @@ impl CameraData {
         Self {
             focal_length,
             f_stop,
-            filmback: filmback.into(),
+            filmback: Filmback::new(filmback[0], filmback[1]),
             near_field,
             far_field,
             world_unit,
-            resolution: resolution.into(),
+            resolution: Resolution::new(resolution[0], resolution[1]),
         }
     }
 }
@@ -162,8 +168,8 @@ impl Default for CameraData {
     }
 }
 
-#[repr(C)]
 #[derive(Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "python-bindings", pyclass)]
 #[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 /// Settings for the circle of confusion calculation.
