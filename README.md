@@ -9,9 +9,9 @@
 
 Calculator for Circle of Confusion (CoC) to calculate the size in pixels of an area, used for depth of field processing.
 
-It's built in Rust. To use the library in no-std: enable the `no-std` feature.
-For the Python package it exposes its functions via [PyO3](https://pyo3.rs/latest/).
+It's built in Rust and compiled to Web Assembly (wasm32) for non-rust targets. 
 
+In Rust to use the library in no-std: enable the `no-std` feature.
 Add the project to your Cargo.toml by using
 ```bash
 cargo add circle-of-confusion
@@ -20,7 +20,7 @@ cargo add circle-of-confusion
 cargo add circle-of-confusion --features no-std
 ```
 
-Or in your Python project (managed by uv, but it's just available in pip as well):
+Or in your Python project:
 ```bash
 uv add circle-of-confusion
 ```
@@ -58,29 +58,39 @@ It's really simple to use, you need to assemble the settings to calculate the ci
 
 #### Python
 ```python
-from circle_of_confusion import Calculator, Settings, Math, CameraData, WorldUnit
+from circle_of_confusion import (
+    initialize_calculator,
+    calculate,
+    Settings,
+    Math,
+    CameraData,
+    WorldUnit,
+    Resolution,
+    Filmback,
+)
 
 camera_data = CameraData(
     focal_length=100.0,
     f_stop=2.0,
-    filmback=(24.576, 18.672),
+    filmback=Filmback(width=24.576, height=18.672),
     near_field=0.1,
     far_field=10000.0,
     world_unit=WorldUnit.M,
-    resolution=(1920, 1080),
+    resolution=Resolution(width=1920, height=1080),
 )
 settings = Settings(
     size=10.0,
     max_size=100.0,
-    math=Math.Real,
+    math=Math.REAL,
     focal_plane=30.0,
     protect=0.0,
     pixel_aspect=1.0,
     camera_data=camera_data,
 )
-calculator = Calculator(settings)
-result = calculator.calculate(10.0) # input distance value from Z-depth
+calculator = initialize_calculator(settings)
+result = calculate(calculator, 10.0)  # input distance value from Z-depth
 assert result == -11.93532943725586
+
 ```
 
 #### Rust
@@ -91,16 +101,16 @@ fn main() {
     let camera_data = CameraData {
         focal_length: 100.0,
         f_stop: 2.0,
-        filmback: Filmback::new(24.576, 18.672),
+        filmback: Filmback { width: 24.576, height: 18.672 },
         near_field: 0.1,
         far_field: 10000.0,
-        world_unit: WorldUnit::M,
-        resolution: Resolution::new(1920, 1080),
+        world_unit: WorldUnit::M.into(),
+        resolution: Resolution { width: 1920, height: 1080 },
     };
     let settings = Settings {
         size: 10.0,
         max_size: 100.0,
-        math: Math::Real,
+        math: Math::Real.into(),
         focal_plane: 30.0,
         protect: 0.0,
         pixel_aspect: 1.0,

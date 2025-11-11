@@ -1,0 +1,125 @@
+syntax = "proto2";
+
+package circle_of_confusion.data;
+
+option java_outer_classname = "CircleOfConfusion";
+
+// Size of sensor
+message Filmback {
+  // Width of sensor
+  required float width = 1 [ default = 24.576 ];
+  // Height of sensor
+  required float height = 2 [ default = 18.672 ];
+}
+
+// Resolution of recording
+message Resolution {
+  // Width of plate
+  required uint32 width = 1 [ default = 1920 ];
+  // Height of plate
+  required uint32 height = 2 [ default = 1080 ];
+}
+
+enum WorldUnit {
+  // Meters
+  M = 3;
+  // Millimeters
+  MM = 0;
+  // Centimeters
+  CM = 1;
+  // Decimeters
+  DM = 2;
+  // Inches
+  IN = 4;
+  // Feet
+  FT = 5;
+}
+
+// Math mode of provided depth channel
+//
+// This enum defines how the depth channel's mathematical representation
+// should be interpreted. The mode is specified by the render engine that
+// generates the depth information.
+enum Math {
+  // One divided by Z (inverse depth)
+  ONE_DIVIDED_BY_Z = 1;
+  // Real depth values
+  REAL = 0;
+}
+
+// Camera parameters that are used when using the camera-based circle of
+// confusion
+//
+// This struct contains camera-specific parameters that are used to calculate
+// circle of confusion.
+message CameraData {
+  // Focal length of the camera lens
+  required float focal_length = 1 [ default = 50 ];
+  // F-stop (aperture) of the camera
+  required float f_stop = 2 [ default = 16 ];
+  // Filmback size (width and height)
+  required Filmback filmback = 3;
+  // Near field distance for depth of field
+  required float near_field = 4 [ default = 0.1 ];
+  // Far field distance for depth of field
+  required float far_field = 5 [ default = 10000 ];
+  // World unit for depth measurements
+  required WorldUnit world_unit = 6;
+  // Resolution camera is recording at
+  required Resolution resolution = 7;
+}
+
+// Settings for the circle of confusion calculation.
+//
+// This struct contains all the parameters needed to calculate the circle of
+// confusion.
+message Settings {
+  // Base size for circle of confusion
+  required float size = 1 [ default = 5 ];
+  // Maximum size for circle of confusion (clamped)
+  required float max_size = 2 [ default = 10 ];
+  // Mathematical interpretation of depth
+  required Math math = 3;
+  // Focal plane position
+  required float focal_plane = 4 [ default = 0.0 ];
+  // Protection value for circle of confusion, this adds a region that has a CoC
+  // of zero.
+  required float protect = 5 [ default = 0 ];
+  // Pixel aspect ratio
+  required float pixel_aspect = 6 [ default = 1 ];
+  // Camera parameters
+  optional CameraData camera_data = 7;
+}
+
+message DepthOfField {
+  required float x = 1 [ default = 0 ];
+  required float y = 2 [ default = 0 ];
+}
+
+message Calculator {
+  required Settings settings = 1;
+  required float internal_focus = 2;
+  required float world_unit_multiplier = 3;
+  required DepthOfField depth_of_field = 4;
+  required float hyperfocal_distance = 5;
+}
+
+enum FFIError {
+  // Data could not be encoded to protobuf
+  PROTO_ENCODE = 1;
+  // Protobuf could not be decoded from input buffer 
+  PROTO_DECODE = 2;
+  // Initialization failed
+  INITIALIZE_FAILED = 3;
+}
+
+
+
+message FFIResult {
+  oneof ResultValue {
+    float float_value = 2;
+    uint32 uint_value = 3;
+    int32 int_value = 4;
+    FFIError error = 6;
+  }
+}

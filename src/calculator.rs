@@ -1,111 +1,12 @@
-use crate::{Math, Settings, WorldUnit};
+use crate::{Calculator, DepthOfField, Math, Settings, WorldUnit};
 
-#[cfg(feature = "python-bindings")]
-use pyo3::prelude::*;
-
-#[cfg(feature = "wasm-bindings")]
-use wasm_bindgen::prelude::*;
-
-#[cfg_attr(feature = "python-bindings", pyclass)]
-#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
-/// Calculator that is able to calculate the Circle of Confusion based on the provided settings.
-///
-/// The size in px is the radius of the convolution.
-/// A CoC of 10 would mean a diameter of 20 pixels.
-///
-/// ## Output:
-///
-/// * `+` is for far field pixels
-/// * `-` is for near field pixels
-///
-/// ## Modes
-///
-/// The calculator supports two modes, one is physically accurate,
-/// the other lets you tune your own DoF size.
-///
-/// ### Manually
-/// When no camera data is provided to the Settings struct, the manual mode will be used.
-/// This creates a smooth falloff to the focal plane point, based on the size and max size added.
-///
-/// It will gradually apply the size based on the distance from the focal plane.
-/// When using a larger size, the CoC will be increased.
-///
-/// Protect can be used to apply a safe region to the focal plane.
-///
-/// ### Camera
-/// When the camera data is applied to the settings,
-/// the camera values will be used instead. This matches real world CoC values.
-///
-/// Lowering f-stop will increase the CoC values, just like increasing the focal-length would.
-///
-/// This calculation is based on the CoC algorithm:
-/// [Wikipedia](https://en.wikipedia.org/wiki/Circle_of_confusion)
-///
-/// ## Usage
-/// Use the `Calculator::new(settings)` method to create the instance
-/// and let the necessary parameters be pre-computed.
-///
-/// To update the settings, for example when changing the focal plane,
-/// call the `update_settings` method.
-///
-/// ## Example
-/// ```
-/// use circle_of_confusion::{Settings, Calculator, CameraData, Math};
-/// let settings = Settings {
-///     math: Math::Real,
-///     focal_plane: 30.0,
-///     max_size: 100.0,
-///     camera_data: Some(CameraData {
-///         f_stop: 2.0,
-///         focal_length: 100.0,
-///         ..Default::default()
-///     }),
-///     ..Default::default()
-/// };
-/// let calculator = Calculator::new(settings);
-/// let result = calculator.calculate(10.0);
-/// assert_eq!(result, -11.935329)
-/// ```
-pub struct Calculator {
-    settings: Settings,
-    internal_focus: f32,
-    world_unit_multiplier: f32,
-    depth_of_field: [f32; 2],
-    hyperfocal_distance: f32,
-}
-
-#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
-#[cfg_attr(feature = "python-bindings", pymethods)]
 impl Calculator {
-    #[cfg(feature = "python-bindings")]
-    #[new]
-    pub fn new_py(settings: Settings) -> Self {
-        Self::new(settings)
-    }
-
-    /// Update the instance of the Calculator with the specified settings.
-    ///
-    /// Automatically calculates all necessary values for calculations.
-    pub fn update_settings(&mut self, settings: Settings) {
-        self.settings = settings;
-        self.world_unit_multiplier = Self::get_world_unit_multiplier(&self.settings);
-        self.internal_focus = Self::get_internal_focus(&self.settings, self.world_unit_multiplier);
-        self.depth_of_field = Self::get_depth_of_field(
-            &self.settings,
-            self.internal_focus,
-            self.world_unit_multiplier,
-        );
-        let zeiss_formula = Self::calculate_zeiss_formula(&self.settings);
-        self.hyperfocal_distance =
-            Self::calculate_hyperfocal_distance(&self.settings, zeiss_formula);
-    }
-
     /// Perform calculation based on the input value.
     ///
     /// This can be called upon a depth map for each pixel for example,
     /// to calculate the size of convolution for each pixel.
     pub fn calculate(&self, value: f32) -> f32 {
-        let mut converted_value = Self::convert_value_to_distance(value, &self.settings.math);
+        let mut converted_value = Self::convert_value_to_distance(value, &self.settings.math());
 
         if self.settings.camera_data.is_some() {
             converted_value *= self.world_unit_multiplier;
@@ -118,29 +19,25 @@ impl Calculator {
     }
 }
 
-#[cfg_attr(feature = "wasm-bindings", wasm_bindgen)]
 impl Calculator {
-    #[cfg_attr(feature = "wasm-bindings", wasm_bindgen(constructor))]
     /// Create a new instance of the Calculator with the specified settings.
     ///
     /// Automatically calculates all necessary values for calculations.
     pub fn new(settings: Settings) -> Self {
-        let world_unit_multiplier = Self::get_world_unit_multiplier(&settings);
-        let internal_focus = Self::get_internal_focus(&settings, world_unit_multiplier);
-        let depth_of_field =
-            Self::get_depth_of_field(&settings, internal_focus, world_unit_multiplier);
-
-        let zeiss_formula = Self::calculate_zeiss_formula(&settings);
-        let hyperfocal_distance = Self::calculate_hyperfocal_distance(&settings, zeiss_formula);
-
-        Self {
-            settings,
-            internal_focus,
-            world_unit_multiplier,
-            depth_of_field,
-            hyperfocal_distance,
-        }
+        let mut instance = Self::default();
+        instance.settings = settings;
+        instance.compute();
+        instance
     }
+    /// Precompute the internal data
+    fn compute(&mut self) {
+        self.world_unit_multiplier = self.get_world_unit_multiplier();
+        self.internal_focus = self.get_internal_focus();
+        self.depth_of_field = self.get_depth_of_field();
+
+        self.hyperfocal_distance = Self::calculate_hyperfocal_distance(&self.settings);
+    }
+
     /// Just a wrapper for pythagoras (length) calculation.
     fn length(a: f32, b: f32) -> f32 {
         libm::sqrtf(libm::powf(a, 2.0) + libm::powf(b, 2.0))
@@ -151,11 +48,11 @@ impl Calculator {
     /// More information can be found here:
     /// https://resources.wolframcloud.com/FormulaRepository/resources/Zeiss-Formula
     fn calculate_zeiss_formula(settings: &Settings) -> f32 {
-        let camera_data = match settings.camera_data {
+        let camera_data = match &settings.camera_data {
             Some(data) => data,
             None => return 1.0,
         };
-        Self::length(camera_data.filmback.x, camera_data.filmback.y) / 1730.0
+        Self::length(camera_data.filmback.width, camera_data.filmback.height) / 1730.0
     }
 
     /// Calculate the distance where it does not matter
@@ -165,19 +62,20 @@ impl Calculator {
     ///
     /// More information:
     /// https://www.watchprosite.com/editors-picks/using-the-zeiss-formula-to-understand-the-circle-of-confusion/1278.1127636.8608906/
-    fn calculate_hyperfocal_distance(settings: &Settings, zeiss_formula: f32) -> f32 {
-        let camera_data = match settings.camera_data {
+    fn calculate_hyperfocal_distance(settings: &Settings) -> f32 {
+        let camera_data = match &settings.camera_data {
             Some(data) => data,
             None => return 0.0, // for non-camera-data things we just use zero
         };
+        let zeiss_formula = Self::calculate_zeiss_formula(settings);
         (libm::powf(camera_data.focal_length, 2.0) / (camera_data.f_stop * zeiss_formula))
             + camera_data.focal_length
     }
 
     /// Map the world unit from the settings to a multiplication value
-    fn get_world_unit_multiplier(settings: &Settings) -> f32 {
-        let world_unit = match settings.camera_data {
-            Some(data) => data.world_unit,
+    fn get_world_unit_multiplier(&self) -> f32 {
+        let world_unit = match &self.settings.camera_data {
+            Some(data) => data.world_unit(),
             None => return 1.0,
         };
         match world_unit {
@@ -191,32 +89,33 @@ impl Calculator {
     }
 
     /// Convert the distance selected according to the math of the input value and the world unit.
-    fn get_internal_focus(settings: &Settings, world_unit_multiplier: f32) -> f32 {
-        Self::convert_value_to_distance(settings.focal_plane, &settings.math).max(0.0)
-            * world_unit_multiplier
+    fn get_internal_focus(&self) -> f32 {
+        Self::convert_value_to_distance(self.settings.focal_plane, &self.settings.math()).max(0.0)
+            * self.world_unit_multiplier
     }
 
     /// Calculate the depth of field range for a safe region.
     /// This is used to increase the region which is considered to be in focus.
-    fn get_depth_of_field(
-        settings: &Settings,
-        internal_focus: f32,
-        world_unit_multiplier: f32,
-    ) -> [f32; 2] {
-        if settings.protect == 0.0 || internal_focus == 0.0 {
-            return [internal_focus, internal_focus];
+    fn get_depth_of_field(&self) -> DepthOfField {
+        if self.settings.protect == 0.0 || self.internal_focus == 0.0 {
+            return DepthOfField {
+                x: self.internal_focus,
+                y: self.internal_focus,
+            };
         }
-        if settings.camera_data.is_some() {
-            return [
-                internal_focus - ((settings.protect * 0.5) * world_unit_multiplier),
-                internal_focus + ((settings.protect * 0.5) * world_unit_multiplier),
-            ];
+        if self.settings.camera_data.is_some() {
+            return DepthOfField {
+                x: self.internal_focus
+                    - ((self.settings.protect * 0.5) * self.world_unit_multiplier),
+                y: self.internal_focus
+                    + ((self.settings.protect * 0.5) * self.world_unit_multiplier),
+            };
         }
-        let normalized_focus = 1.0 / internal_focus;
-        [
-            1.0 / (normalized_focus + (normalized_focus * (settings.protect * 0.5))),
-            1.0 / (normalized_focus - (normalized_focus * (settings.protect * 0.5))),
-        ]
+        let normalized_focus = 1.0 / self.internal_focus;
+        DepthOfField {
+            x: 1.0 / (normalized_focus + (normalized_focus * (self.settings.protect * 0.5))),
+            y: 1.0 / (normalized_focus - (normalized_focus * (self.settings.protect * 0.5))),
+        }
     }
 
     /// Convert input value to distance value.
@@ -233,7 +132,7 @@ impl Calculator {
     /// Apply the Circle of Confusion algorithm to the distance, to calculate the disc
     /// size of confusion which a real camera would also have.
     fn calculate_circle_of_confusion(&self, distance: f32) -> f32 {
-        let camera_data = match self.settings.camera_data {
+        let camera_data = match &self.settings.camera_data {
             Some(data) => data,
             None => {
                 return 0.0;
@@ -243,16 +142,16 @@ impl Calculator {
             return distance;
         }
         let mut calculated_focal_distance = self.internal_focus;
-        let simple_point = [0.0; 2];
+        let simple_point = DepthOfField { x: 0.0, y: 0.0 };
         if self.depth_of_field != simple_point
-            && (distance > self.depth_of_field[0] && distance < self.depth_of_field[1])
+            && (distance > self.depth_of_field.x && distance < self.depth_of_field.y)
         {
             return 0.0;
         }
-        if distance < self.depth_of_field[0] {
-            calculated_focal_distance = self.depth_of_field[0];
+        if distance < self.depth_of_field.x {
+            calculated_focal_distance = self.depth_of_field.x;
         } else if distance > self.internal_focus {
-            calculated_focal_distance = self.depth_of_field[1];
+            calculated_focal_distance = self.depth_of_field.y;
         }
 
         calculated_focal_distance = calculated_focal_distance.min(self.hyperfocal_distance);
@@ -262,10 +161,11 @@ impl Calculator {
                 * distance
                 * (calculated_focal_distance - camera_data.focal_length));
 
-        -(circle_of_confusion / (Self::length(camera_data.filmback.x, camera_data.filmback.y))
+        -(circle_of_confusion
+            / (Self::length(camera_data.filmback.width, camera_data.filmback.height))
             * (Self::length(
-                camera_data.resolution.x as f32,
-                camera_data.resolution.y as f32,
+                camera_data.resolution.width as f32,
+                camera_data.resolution.height as f32,
             ) * 0.5))
     }
 
@@ -273,7 +173,7 @@ impl Calculator {
     /// This is not physically accurate, but gives a nice falloff.
     fn calculate_direct_map(&self, pixel_value: f32) -> f32 {
         if self.internal_focus == pixel_value
-            || (pixel_value > self.depth_of_field[0] && pixel_value < self.depth_of_field[1])
+            || (pixel_value > self.depth_of_field.x && pixel_value < self.depth_of_field.y)
         {
             return 0.0;
         }
@@ -286,19 +186,19 @@ impl Calculator {
 
         let mut calculated_value = 0.0;
         if self.internal_focus < pixel_value {
-            let calculated_focus_point = if self.depth_of_field[1] == 0.0 {
+            let calculated_focus_point = if self.depth_of_field.y == 0.0 {
                 0.0
             } else {
-                1.0 / self.depth_of_field[1]
+                1.0 / self.depth_of_field.y
             };
             calculated_value =
                 (calculated_focus_point - converted_pixel_value) / calculated_focus_point;
         }
         if self.internal_focus > pixel_value {
-            let calculated_focus_point = if self.depth_of_field[0] == 0.0 {
+            let calculated_focus_point = if self.depth_of_field.x == 0.0 {
                 0.0
             } else {
-                1.0 / self.depth_of_field[0]
+                1.0 / self.depth_of_field.x
             };
             let calculated_near_field =
                 (converted_pixel_value - calculated_focus_point) / calculated_focus_point;
@@ -311,133 +211,95 @@ impl Calculator {
 
 #[cfg(test)]
 mod tests {
+    use core::panic;
+
     use super::*;
-    use crate::settings::CameraData;
-    use assert_approx_eq::assert_approx_eq;
-    use rstest::rstest;
+    use crate::CameraData;
+    use serde_json::Value;
+    use approx::{self, relative_eq};
 
-    #[rstest]
-    #[case( // 1 Test simple size
-        0.0,
-        Settings { size: 20.0, ..Default::default() },
-        0.0
-    )]
-    #[case( // 2 Test another size
-        10.0,
-        Settings { size: 30.0, ..Default::default() },
-        -10.0
-    )]
-    #[case( // 3 Test in-focus
-        50.0,
-        Settings { focal_plane: 50.0, max_size: 100.0, ..Default::default() },
-        0.0
-    )]
-    #[case( // 4 Test out of focus
-        0.5,
-        Settings {
-            math: Math::OneDividedByZ,
-            focal_plane: 0.0,
-            max_size: 100.0,
-            ..Default::default()
-        },
-        -100.0
-    )]
-    #[case( // 5 Test focus in foreground
-        10.0,
-        Settings {
-            math: Math::Real,
-            focal_plane: 0.0,
-            max_size: 100.0,
-            ..Default::default()
-        },
-        -100.0
-    )]
-    #[case( // 6 Test z-focus
-        10.0,
-        Settings {
-            math: Math::Real,
-            focal_plane: 3.0,
-            size: 1.0,
-            max_size: 100.0,
-            ..Default::default()
-        },
-        0.7
-    )]
-    #[case( // 7 Test far focus with pixels that are zero.
-        0.0,
-        Settings {
-            math: Math::OneDividedByZ,
-            focal_plane: 20.0,
-            size: 3.0,
-            max_size: 100.0,
-            ..Default::default()
-        },
-        2.9999843
-    )]
-    #[case( // 8 Test camera focus
-        10.0,
-        Settings {
-            math: Math::Real,
-            focal_plane: 10.0,
-            max_size: 100.0,
-            camera_data: Some(CameraData::default()),
-            ..Default::default()
-        },
-        0.075
-    )]
-    #[case( // 9 Test camera out of focus
-        10.0,
-        Settings {
-            math: Math::Real,
-            focal_plane: 15.0,
-            max_size: 10.0,
-            camera_data: Some(
-                CameraData {
-                    f_stop: 2.0,
-                    ..Default::default()
-                }
-            ),
-            ..Default::default()
-        },
-        -1.4819534
-    )]
-    #[case( // 10 Test camera change focal plane
-        10.0,
-        Settings {
-            math: Math::Real,
-            focal_plane: 30.0,
-            max_size: 100.0,
-            camera_data: Some(
-                CameraData {
-                    f_stop: 2.0,
-                    focal_length: 100.0,
-                    ..Default::default()
-                }
-            ),
-            ..Default::default()
-        },
-        -11.935
-    )]
-    #[case( // 11 Test camera far zero should return in far max
-        10.0,
-        Settings {
-            math: Math::Real,
-            focal_plane: 2.4,
-            max_size: 50.0,
-            camera_data: Some(
-                CameraData {
-                    f_stop: 2.0,
-                    focal_length: 100.0,
-                    ..Default::default()
-                }
-            ),
-            ..Default::default()
-        },
-        50.0
-    )]
-    fn test_map_rendering(#[case] coc: f32, #[case] settings: Settings, #[case] expected: f32) {
-        let calculator = Calculator::new(settings);
+    #[derive(Debug)]
+    struct TestResult {
+        #[allow(dead_code)]
+        pub settings: Settings,
+        #[allow(dead_code)]
+        pub coc: f32,
+        pub result: f32,
+        pub expected: f32,
+    }
 
-        assert_approx_eq!(calculator.calculate(coc), expected, 1e-2f32);
+    impl TestResult {
+        pub fn is_success(&self) -> bool {
+            !relative_eq!(self.result, self.expected, epsilon = 1e-2)
+        }
+    }
+
+    fn case_to_settings(case: &Value) -> Settings {
+        let mut settings = Settings::default();
+        if case["size"].is_f64() {
+            settings.size = case["size"].as_f64().unwrap() as f32;
+        }
+        if case["max_size"].is_f64() {
+            settings.max_size = case["max_size"].as_f64().unwrap() as f32;
+        }
+        if case["focal_plane"].is_f64() {
+            settings.focal_plane = case["focal_plane"].as_f64().unwrap() as f32;
+        }
+        if let Some(camera_data) = case.get("camera_data") {
+            let mut camera_instance = CameraData::default();
+            if camera_data["focal_length"].is_f64() {
+                camera_instance.focal_length = camera_data["focal_length"].as_f64().unwrap() as f32;
+            }
+            if camera_data["f_stop"].is_f64() {
+                camera_instance.f_stop = camera_data["f_stop"].as_f64().unwrap() as f32;
+            }
+
+            settings.camera_data = Some(camera_instance);
+        }
+        if case["math"].is_string() {
+            settings.math = match case["math"].as_str().unwrap() {
+                "ONE_DIVIDED_BY_Z" => Math::OneDividedByZ,
+                _ => Math::Real,
+            }
+            .into()
+        }
+
+        settings
+    }
+
+    #[test]
+    fn test_calculation() {
+        let cases = std::fs::read_to_string(
+            std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("test").join("cases.json")
+        )
+        .unwrap();
+
+        let json: Vec<Value> = serde_json::from_str(&cases).unwrap();
+
+        let mut results = Vec::new();
+        for case in json.iter() {
+            let settings = case_to_settings(&case["settings"]);
+            let expected = case["expected"].as_f64().unwrap() as f32;
+            let coc = case["coc"].as_f64().unwrap() as f32;
+            let calculator = Calculator::new(settings);
+            let result = calculator.calculate(coc);
+            results.push(TestResult {
+                settings,
+                coc,
+                result,
+                expected,
+            });
+        }
+
+        results.retain(| f | f.is_success());
+
+        if results.is_empty() {
+            return;
+        }
+
+        for (i, result) in results.iter().enumerate() {
+            println!("Test case '{i}' failed with input: {:#?}", result)
+        }
+        panic!("Test failed")
     }
 }

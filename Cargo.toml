@@ -1,7 +1,7 @@
 [package]
 name = "circle-of-confusion"
 version = "0.1.4"
-edition = "2021"
+edition = "2024"
 license = "EUPL-1.2"
 authors = ["Gilles Vink <gillesvink@noreply.codeberg.org>"]
 description = "Calculator for Circle of Confusion (CoC) to calculate the size in pixels of an area, used for depth of field processing"
@@ -12,22 +12,29 @@ categories = ["algorithms", "mathematics", "no-std", "no-std::no-alloc"]
 
 [lib]
 name = "circle_of_confusion"
-crate-type = ["cdylib", "rlib", "staticlib"]
+crate-type = ["cdylib", "rlib"]
 
 
 [features]
 default = ["std"]
 std = []
 serde = ["dep:serde"]
-wasm-bindings = ["dep:wasm-bindgen"]
-python-bindings = ["dep:pyo3", "std"]
+compile-protobuf-src = ["dep:protobuf-src"]
 
 [dependencies]
 libm = ">=0.2.11, < 0.3"
-pyo3 = { version = ">=0.25.0, < 0.26", optional = true }
-serde = { version = "1.0.228", features = ["derive"], optional = true}
-wasm-bindgen = { version = "0.2.105", optional = true }
+prost = { version = ">=0.14, < 0.15" }
+prost-types = { version = ">=0.14, < 0.15"}
+serde = { version = ">=1.0, < 1.1", features = ["derive"], optional = true}
 
 [dev-dependencies]
 rstest = "0.25.0"
-assert_approx_eq = "1.1.0"
+serde_json = "1.0.145"
+approx = "0.5.1"
+
+[build-dependencies]
+prost-build = "0.14.1"
+protobuf-src = { version = "2.1.1", optional = true }
+
+[profile.release]
+lto = true
