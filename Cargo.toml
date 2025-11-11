@@ -1,6 +1,6 @@
 [package]
 name = "circle-of-confusion"
-version = "0.1.4"
+version = "0.2.0"
 edition = "2024"
 license = "EUPL-1.2"
 authors = ["Gilles Vink <gillesvink@noreply.codeberg.org>"]
