@@ -1,6 +1,6 @@
 [build-system]
-requires = ["maturin>=1.9,<2.0"]
-build-backend = "maturin"
+requires = ["hatchling", "hatch-build-scripts"]
+build-backend = "hatchling.build"
 
 [project]
 name = "circle-of-confusion"
@@ -31,21 +31,49 @@ authors = [{ name = "Gilles Vink", email = "gillesvink@noreply.codeberg.org" }]
 maintainers = [
     { name = "Gilles Vink", email = "gillesvink@noreply.codeberg.org" },
 ]
+dependencies = ["mypy>=1.18.0", "mypy-protobuf>=3.6.0", "wasmtime>=38.0.0"]
 
 [project.urls]
 Homepage = "https://codeberg.org/gillesvink/circle-of-confusion"
 "Bug Tracker" = "https://codeberg.org/gillesvink/circle-of-confusion/issues"
 Changelog = "https://codeberg.org/gillesvink/circle-of-confusion/src/branch/main/CHANGELOG.md"
 
-[tool.maturin]
-features = ["pyo3/extension-module", "python-bindings"]
-
 [tool.uv]
 cache-keys = [
     { file = "pyproject.toml" },
     { file = "Cargo.toml" },
     { file = "**/*.rs" },
+    { file = "**/*.proto" },
+
 ]
 
+[tool.hatch.version]
+path = "version.txt"
+
+[tool.hatch.build.targets.wheel]
+packages = ["python/src/circle_of_confusion"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"./build/_circle_of_confusion" = "/_circle_of_confusion"
+
+[[tool.hatch.build.targets.wheel.hooks.build-scripts.scripts]]
+out_dir = "build"
+commands = [
+    "mkdir -p build/_circle_of_confusion",
+    "touch build/_circle_of_confusion/__init__.py",
+    "uv pip install mypy-protobuf",
+    "protoc --proto_path=./proto --python_out=./build/_circle_of_confusion circle_of_confusion.proto --mypy_out=./build/_circle_of_confusion",
+    "cargo build --lib --release --target wasm32-unknown-unknown",
+    "cp target/wasm32-unknown-unknown/release/circle_of_confusion.wasm ./build/_circle_of_confusion",
+]
+artifacts = [
+    "_circle_of_confusion",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["build"]
+
 [dependency-groups]
-dev = ["pytest>=8.3.5", "pytest-readme>=1.0.2"]
+dev = [
+    "pytest>=8.3.5", "pytest-readme>=1.0.2",
+]
