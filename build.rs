@@ -10,20 +10,5 @@ fn main() -> Result<()> {
 
     config.compile_protos(&["circle_of_confusion.proto"], &["proto/"])?;
 
-    write_version();
-
     Ok(())
-}
-
-fn write_version() {
-    let path = std::path::Path::new("./version.txt");
-    let mut file = std::fs::File::create(&path).unwrap();
-    file.write_all(
-        format!(
-            "version = '{}'",
-            std::env::var("CARGO_PKG_VERSION").unwrap()
-        )
-        .as_bytes(),
-    )
-    .unwrap();
 }

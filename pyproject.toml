@@ -48,8 +48,8 @@ cache-keys = [
 ]
 
 [tool.hatch.version]
-path = "version.txt"
-
+path = "Cargo.toml"
+pattern = "version = \"(?P<version>\\d+\\.\\d+\\.\\d+)"
 [tool.hatch.build.targets.wheel]
 packages = ["python/src/circle_of_confusion"]
 
