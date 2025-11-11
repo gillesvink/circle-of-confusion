@@ -4,8 +4,8 @@ when:
   
 steps:
   release:
-    when: 
-      branch: "main"
+    when:
+      repo: gillesvink/circle-of-confusion
     image: rust
     commands:
       - curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
