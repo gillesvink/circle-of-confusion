@@ -10,8 +10,8 @@ from circle_of_confusion import (
 from pathlib import Path
 import json
 from dataclasses import dataclass
-from _circle_of_confusion_pb2 import Math
 from circle_of_confusion._exception import CircleOfConfusionError
+from circle_of_confusion import Math
 
 CASES: Path = (Path(__file__).parent.parent / "cases.json").resolve()
 """Path to cases.json"""

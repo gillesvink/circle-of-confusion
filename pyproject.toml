@@ -31,11 +31,7 @@ authors = [{ name = "Gilles Vink", email = "gillesvink@noreply.codeberg.org" }]
 maintainers = [
     { name = "Gilles Vink", email = "gillesvink@noreply.codeberg.org" },
 ]
-dependencies = [
-    "mypy>=1.18.2",
-    "mypy-protobuf>=3.6.0",
-    "wasmtime>=38.0.0",
-]
+dependencies = ["mypy>=1.18.0", "mypy-protobuf>=3.6.0", "wasmtime>=38.0.0"]
 
 [project.urls]
 Homepage = "https://codeberg.org/gillesvink/circle-of-confusion"
@@ -51,40 +47,33 @@ cache-keys = [
 
 ]
 
-
 [tool.hatch.version]
 path = "version.txt"
 
 [tool.hatch.build.targets.wheel]
 packages = ["python/src/circle_of_confusion"]
 
-[[tool.hatch.build.hooks.build-scripts.scripts]]
+[tool.hatch.build.targets.wheel.force-include]
+"./build/_circle_of_confusion" = "/_circle_of_confusion"
+
+[[tool.hatch.build.targets.wheel.hooks.build-scripts.scripts]]
 out_dir = "build"
 commands = [
+    "mkdir -p build/_circle_of_confusion",
+    "touch build/_circle_of_confusion/__init__.py",
     "uv pip install mypy-protobuf",
-    "protoc --proto_path=./proto --python_out=./build circle_of_confusion.proto --mypy_out=./build",
+    "protoc --proto_path=./proto --python_out=./build/_circle_of_confusion circle_of_confusion.proto --mypy_out=./build/_circle_of_confusion",
     "cargo build --lib --release --target wasm32-unknown-unknown",
-    "cp target/wasm32-unknown-unknown/release/circle_of_confusion.wasm ./build",
-    "mv build/circle_of_confusion_pb2.pyi build/_circle_of_confusion_pb2.pyi",
-    "mv build/circle_of_confusion_pb2.py build/_circle_of_confusion_pb2.py"
-
+    "cp target/wasm32-unknown-unknown/release/circle_of_confusion.wasm ./build/_circle_of_confusion",
 ]
 artifacts = [
-    "circle_of_confusion.wasm",
-    "_circle_of_confusion_pb2.py",
-    "_circle_of_confusion_pb2.pyi",
+    "_circle_of_confusion",
 ]
-clean_artifacts = "true"
-clean_out_dir = "true"
-
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules"
 pythonpath = ["build"]
 
 [dependency-groups]
 dev = [
-    "prettyprinter>=0.18.0",
-    "pytest>=8.3.5",
- "pytest-readme>=1.0.2",
+    "pytest>=8.3.5", "pytest-readme>=1.0.2",
 ]

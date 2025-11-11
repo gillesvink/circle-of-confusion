@@ -1,6 +1,6 @@
 {
     "python.analysis.extraPaths": [
         "./build",
-        "./python/src"
+        "./build/dep"
     ]
 }

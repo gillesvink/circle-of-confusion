@@ -25,6 +25,11 @@ Or in your Python project:
 uv add circle-of-confusion
 ```
 
+To build yourself, you need to have protoc installed and Rust.
+For wasm packages you need to have the `wasm32-unknown-unknown` target installed.
+
+It is not made compatible with Windows, but you can build it in a Linux based container.
+
 ## Usage
 The calculator is able to calculate the Circle of Confusion based on the provided settings.
 The size in px is the radius of the convolution.

@@ -1,4 +1,4 @@
-from _circle_of_confusion_pb2 import FFIError
+from _circle_of_confusion.circle_of_confusion_pb2 import FFIError
 
 
 class CircleOfConfusionError(Exception):

@@ -1,0 +1,26 @@
+when:
+  branch:
+    - main
+  
+steps:
+  release:
+    when: 
+      branch: "main"
+    image: rust
+    commands:
+      - curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+      - cargo binstall release-plz
+      - release-plz release --forge gitea --git-token $${CODEBERG_TOKEN}
+    environment:
+      CODEBERG_TOKEN:
+        from_secret: codeberg_token
+
+  pull_request:
+    image: rust
+    commands:
+      - curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+      - cargo binstall release-plz
+      - release-plz release-pr --forge gitea --git-token $${CODEBERG_TOKEN}
+    environment:
+      CODEBERG_TOKEN:
+        from_secret: codeberg_token

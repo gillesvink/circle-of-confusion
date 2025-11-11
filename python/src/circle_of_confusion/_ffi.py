@@ -3,7 +3,7 @@
 from functools import lru_cache
 import math
 from circle_of_confusion._exception import CircleOfConfusionError
-import _circle_of_confusion_pb2
+from _circle_of_confusion import circle_of_confusion_pb2
 import sys
 from wasmtime import (
     Store,
@@ -39,13 +39,13 @@ class Calculator:
     """
 
     _store: Store
-    _inner_calculator: _circle_of_confusion_pb2.Calculator
+    _inner_calculator: circle_of_confusion_pb2.Calculator
     _size: int
     _exports: InstanceExports
 
 
 def initialize_calculator(
-    settings: _circle_of_confusion_pb2.Settings,
+    settings: circle_of_confusion_pb2.Settings,
 ) -> Calculator:
     """Initialize the calculator based on the settings provided.
 
@@ -55,7 +55,7 @@ def initialize_calculator(
     Returns:
         calculator instance able to calculate coc values
     """
-    if not isinstance(settings, _circle_of_confusion_pb2.Settings):
+    if not isinstance(settings, circle_of_confusion_pb2.Settings):
         msg = f"Provided settings is not a valid settings object: '{type(settings)}'"
         raise CircleOfConfusionError(msg)
     store = Store()
@@ -70,7 +70,7 @@ def initialize_calculator(
     result_size = initialize_calculator_wasm(store, len(settings_bytes))
     result = _get_result(store, memory, result_size)
 
-    calculator = _circle_of_confusion_pb2.Calculator.FromString(
+    calculator = circle_of_confusion_pb2.Calculator.FromString(
         memory.read(store, _PTR_OFFSET, result.uint_value + _PTR_OFFSET)
     )
     return Calculator(store, calculator, result.uint_value, exports)
@@ -78,13 +78,13 @@ def initialize_calculator(
 
 def _get_result(
     store, memory: Memory, result_size
-) -> _circle_of_confusion_pb2.FFIResult:
+) -> circle_of_confusion_pb2.FFIResult:
     """Map the result from memory into a FFIResult object."""
     calculator_size = _get_calculator_size()
     if result_size == 0:
         raise CircleOfConfusionError("Buffer did not have enough space to write to.")
 
-    result = _circle_of_confusion_pb2.FFIResult.FromString(
+    result = circle_of_confusion_pb2.FFIResult.FromString(
         memory.read(
             store,
             calculator_size + _PTR_OFFSET,
@@ -148,11 +148,11 @@ def _initialize_wasm(store: Store):
 def _get_wasm_filepath() -> Path:
     """Get the path to the wasm file."""
     for directory in sys.path:
-        path = Path(directory) / _WASM_NAME
+        path = Path(directory) / "_circle_of_confusion" / _WASM_NAME
         if path.is_file():
             return path
     raise CircleOfConfusionError(
-        "Wasm binary could not be located in PYTHONPATH environment variable"
+        "Wasm binary could not be located in PATH"
     )
 
 

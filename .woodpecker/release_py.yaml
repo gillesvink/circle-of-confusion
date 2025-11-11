@@ -1,0 +1,18 @@
+when:
+  - event: tag
+    ref: refs/tags/v*
+
+steps:
+  release:
+    image: ghcr.io/astral-sh/uv:trixie
+    commands:
+      - apt update
+      - apt install -y protobuf-compiler rustup
+      - rustup default stable && rustup target add wasm32-unknown-unknown
+      - uv build
+      - uv run --isolated --no-project --with dist/*.whl --with pytest pytest
+      - uv run --isolated --no-project --with dist/*.tar.gz --with pytest pytest
+      - uv publish --token $${PYPI_TOKEN}
+    environment:
+      PYPI_TOKEN:
+        from_secret: pypi_token
