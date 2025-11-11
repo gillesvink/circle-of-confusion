@@ -6,11 +6,17 @@ steps:
   test_rust:
     image: rust
     commands:
-      - apt update && apt install python3-dev -y
-      - cargo test --no-default-features --release
-      - cargo test --features python-bindings --release
+      - apt update
+      - apt install -y protobuf-compiler
+      - cargo test --release
+
 
   test_python:
     image: ghcr.io/astral-sh/uv:debian
     commands:
+      - apt update
+      - apt install -y protobuf-compiler
+      - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      - . "$HOME/.cargo/env" 
+      - rustup target add wasm32-unknown-unknown
       - uv run pytest
