@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Other
 
-- Set remote url for push
+- Add support for wasm runtimes
 
 ## [0.1.4](https://codeberg.org/gillesvink/circle-of-confusion/compare/v0.1.3...v0.1.4) - 2025-10-29
 
