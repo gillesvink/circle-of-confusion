@@ -12,11 +12,10 @@ steps:
 
 
   test_python:
-    image: ghcr.io/astral-sh/uv:debian
+    image: ghcr.io/astral-sh/uv:trixie
     commands:
       - apt update
-      - apt install -y protobuf-compiler
-      - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-      - . "$HOME/.cargo/env" 
+      - apt install -y protobuf-compiler rustup
+      - rustup default stable
       - rustup target add wasm32-unknown-unknown
       - uv run pytest
