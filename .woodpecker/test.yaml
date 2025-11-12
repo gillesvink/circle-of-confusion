@@ -26,7 +26,7 @@ steps:
       - apt update && apt install -y protobuf-compiler rustup
       - rustup target add wasm32-unknown-unknown
       - curl -LsSf https://astral.sh/uv/install.sh | sh
-      - source $HOME/.local/bin/env
+      - . $HOME/.local/bin/env
       - uv build
 
   test_python:
