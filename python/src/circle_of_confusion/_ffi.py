@@ -129,9 +129,10 @@ def calculate(calculator: Calculator, distance: float) -> float:
     """
     if not isinstance(calculator, Calculator):
         msg = (
-            "Provided Calculator is not a valid ",
-            f"Calculator object: '{type(calculator)}'",
+            "Provided Calculator is not a valid "
+            f"Calculator object: '{type(calculator)}'"
         )
+
         raise CircleOfConfusionError(msg)
 
     if not isinstance(distance, float):

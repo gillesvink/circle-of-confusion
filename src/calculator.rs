@@ -215,8 +215,8 @@ mod tests {
 
     use super::*;
     use crate::CameraData;
-    use serde_json::Value;
     use approx::{self, relative_eq};
+    use serde_json::Value;
 
     #[derive(Debug)]
     struct TestResult {
@@ -269,12 +269,9 @@ mod tests {
 
     #[test]
     fn test_calculation() {
-        let cases = std::fs::read_to_string(
-            std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("test").join("cases.json")
-        )
-        .unwrap();
+        let cases = include_str!("../test/cases.json");
 
-        let json: Vec<Value> = serde_json::from_str(&cases).unwrap();
+        let json: Vec<Value> = serde_json::from_str(cases).unwrap();
 
         let mut results = Vec::new();
         for case in json.iter() {
@@ -291,14 +288,14 @@ mod tests {
             });
         }
 
-        results.retain(| f | f.is_success());
+        results.retain(|f| f.is_success());
 
         if results.is_empty() {
             return;
         }
 
         for (i, result) in results.iter().enumerate() {
-            println!("Test case '{i}' failed with input: {:#?}", result)
+            eprintln!("Test case '{i}' failed with input: {:#?}", result)
         }
         panic!("Test failed")
     }

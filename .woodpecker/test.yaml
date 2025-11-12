@@ -1,21 +1,41 @@
 when:
   event: [push, manual]
   path:
-    include: ["*.rs", "*.toml", "*.yaml", "*.py"]
+    include: ["*.rs", "*.toml", "*.yaml", "*.py", "*.proto"]
+
+matrix:
+  PYTHON_VERSION:
+    - 3.9
+    - 3.10
+    - 3.11
+    - 3.12
+    - 3.13
+    - 3.14
+
 steps:
   test_rust:
-    image: rust
+    image: rust:trixie
     commands:
-      - apt update
-      - apt install -y protobuf-compiler
+      - apt update && apt install -y protobuf-compiler
+      - rustup target add wasm32-wasip1
+      - curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+      - curl -LsSf https://astral.sh/uv/install.sh | sh
+      - source $HOME/.local/bin/env
+      - cargo binstall wasmtime-cli uv
       - cargo test --release
+      - cargo test --target wasm32-wasip1
+      - uv build
 
+  build_python:
+    image: rust:trixie
+    commands:
+      - apt update && apt install -y protobuf-compiler rustup
+      - rustup target add wasm32-unknown-unknown
+      - curl -LsSf https://astral.sh/uv/install.sh | sh
+      - source $HOME/.local/bin/env
+      - uv build
 
   test_python:
     image: ghcr.io/astral-sh/uv:trixie
     commands:
-      - apt update
-      - apt install -y protobuf-compiler rustup
-      - rustup default stable
-      - rustup target add wasm32-unknown-unknown
-      - uv run pytest
+      - uv run --isolated --no-project --with dist/*.whl --managed-python -p ${PYTHON_VERSION} --with pytest pytest
