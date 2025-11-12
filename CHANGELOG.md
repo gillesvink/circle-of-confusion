@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1](https://codeberg.org/gillesvink/circle-of-confusion/compare/v0.2.0...v0.2.1) - 2025-11-12
+
+### Other
+
+- Add `wasm-bindings` feature that conditionally enables the ABI interface.
+
 ## [0.2.0](https://codeberg.org/gillesvink/circle-of-confusion/compare/v0.1.4...v0.2.0) - 2025-11-11
 
 ### Other
