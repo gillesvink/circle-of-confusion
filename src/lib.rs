@@ -8,7 +8,7 @@ mod datamodel {
 
 pub use crate::datamodel::*;
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm-bindings")]
 mod wasm {
     /// As wasm memory is linear, the memory starts at null. But this doesn't work well with LTO.
     const PTR_OFFSET: usize = 1;
@@ -117,15 +117,15 @@ mod wasm {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm-bindings")]
 pub use wasm::*;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm-bindings"))]
 pub fn initialize_calculator(settings: Settings) -> Calculator {
     Calculator::new(settings)
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm-bindings"))]
 pub fn calculate(calculator: &Calculator, value: f32) -> f32 {
     calculator.calculate(value)
 }

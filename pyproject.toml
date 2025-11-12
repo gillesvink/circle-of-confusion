@@ -63,7 +63,7 @@ commands = [
     "touch build/_circle_of_confusion/__init__.py",
     "uv pip install mypy-protobuf",
     "protoc --proto_path=./proto --python_out=./build/_circle_of_confusion circle_of_confusion.proto --mypy_out=./build/_circle_of_confusion",
-    "cargo build --lib --release --target wasm32-unknown-unknown",
+    "cargo build --lib --release --target wasm32-unknown-unknown --features wasm-bindings",
     "cp target/wasm32-unknown-unknown/release/circle_of_confusion.wasm ./build/_circle_of_confusion",
 ]
 artifacts = [
@@ -75,5 +75,13 @@ pythonpath = ["build"]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.3.5", "pytest-readme>=1.0.2",
+    "pytest>=8.3.5",
+    "pytest-readme>=1.0.2",
+    "ty>=0.0.1a26",
 ]
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D203", "D213", "COM812"]
+
+[tool.ty.rules]
+index-out-of-bounds = "ignore"

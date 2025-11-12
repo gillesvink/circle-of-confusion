@@ -64,7 +64,7 @@ It's really simple to use, you need to assemble the settings to calculate the ci
 #### Python
 ```python
 from circle_of_confusion import (
-    initialize_calculator,
+    Calculator,
     calculate,
     Settings,
     Math,
@@ -92,7 +92,7 @@ settings = Settings(
     pixel_aspect=1.0,
     camera_data=camera_data,
 )
-calculator = initialize_calculator(settings)
+calculator = Calculator(settings)
 result = calculate(calculator, 10.0)  # input distance value from Z-depth
 assert result == -11.93532943725586
 

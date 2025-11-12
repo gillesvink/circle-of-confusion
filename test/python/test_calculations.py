@@ -1,24 +1,29 @@
+"""Tests for the wasm calculation."""
+
+import json
+import logging
+from dataclasses import dataclass
+from pathlib import Path
+
 import pytest
 from _pytest.python_api import ApproxBase
-from google.protobuf.json_format import MessageToJson
 from circle_of_confusion import (
+    CameraData,
+    Math,
     Settings,
     calculate,
     initialize_calculator,
-    CameraData,
 )
-from pathlib import Path
-import json
-from dataclasses import dataclass
 from circle_of_confusion._exception import CircleOfConfusionError
-from circle_of_confusion import Math
+from google.protobuf.json_format import MessageToJson
 
+logger = logging.getLogger(__name__)
 CASES: Path = (Path(__file__).parent.parent / "cases.json").resolve()
 """Path to cases.json"""
 
 
 def _case_to_settings(settings_json: dict) -> Settings:
-    """A quick and dirty implementation to parse the json into a settings object."""
+    """Parse the json into a settings object (quick and dirty implementaiton)."""
     settings = Settings()
 
     if settings_json.get("camera_data"):
@@ -48,21 +53,25 @@ def _case_to_settings(settings_json: dict) -> Settings:
 
 @dataclass
 class Result:
-    settings: Settings
+    """Test result data container."""
+
+    settings: str
     coc: float
     result: float
     expected: ApproxBase
 
     def is_success(self) -> bool:
+        """Verify result to match expected."""
         return self.result == self.expected
 
-def test_calculations():
-    """Test calculations to match the cases.json"""
+
+def test_calculations() -> None:
+    """Test calculations to match the cases.json."""
     test_cases = json.loads(CASES.read_text())
 
     results: list[Result] = []
 
-    for i, test_case in enumerate(test_cases):
+    for test_case in test_cases:
         settings = _case_to_settings(test_case["settings"])
         calculator = initialize_calculator(settings)
         result = calculate(calculator, test_case["coc"])
@@ -75,27 +84,41 @@ def test_calculations():
                     test_case["expected"],
                     0.01,  # roughly match it
                 ),
-            )
+            ),
         )
 
     result = [result for result in results if not result.is_success()]
     if not result:
         return
-    
-    for i, result in enumerate(result):
-        msg = f"Test case '{i}' failed with input: '{result}'"
-        print(msg)
-    assert False
 
-def test_calculation_with_invalid_object():
-    with pytest.raises(CircleOfConfusionError, match="Provided Calculator is not a valid Calculator object: '<class 'str'>'"):
-        calculate("im not a settings object", 20)
-
-def test_calculation_with_no_float_provided():
-    with pytest.raises(CircleOfConfusionError, match="No correct distance value provided: '<class 'NoneType'>'"):
-        calculate(initialize_calculator(Settings()), None)
+    for i, item in enumerate(result):
+        msg = f"Test case '{i}' failed with input: '{item}'"
+        logger.error(msg)
+    pytest.fail("Some of the tests did not match the expected result")
 
 
-def test_calculation_with_nan_provided():
-    with pytest.raises(CircleOfConfusionError, match="Provided distance is not a number"):
-        calculate(initialize_calculator(Settings()), float('nan'))
+def test_calculation_with_invalid_object() -> None:
+    """Test calculation to fail with invalid object passed."""
+    with pytest.raises(
+        CircleOfConfusionError,
+        match="Provided Calculator is not a valid Calculator object: '<class 'str'>'",
+    ):
+        calculate("im not a settings object", 20)  # ty: ignore[invalid-argument-type]
+
+
+def test_calculation_with_no_float_provided() -> None:
+    """Test calculation to fail when no value is provided."""
+    with pytest.raises(
+        CircleOfConfusionError,
+        match="No correct distance value provided: '<class 'NoneType'>'",
+    ):
+        calculate(initialize_calculator(Settings()), None)  # ty: ignore[invalid-argument-type]
+
+
+def test_calculation_with_nan_provided() -> None:
+    """Test calculation to fail when nan is provided."""
+    with pytest.raises(
+        CircleOfConfusionError,
+        match="Provided distance is not a number",
+    ):
+        calculate(initialize_calculator(Settings()), float("nan"))

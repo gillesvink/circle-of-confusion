@@ -1,4 +1,4 @@
-use std::io::{Result, Write};
+use std::io::Result;
 
 fn main() -> Result<()> {
     #[cfg(feature = "compile-protobuf-src")]
