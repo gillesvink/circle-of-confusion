@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Other
 
-- Fix source for uv in sh
+- Add `wasm-bindings` feature that conditionally enables the ABI interface.
 
 ## [0.2.0](https://codeberg.org/gillesvink/circle-of-confusion/compare/v0.1.4...v0.2.0) - 2025-11-11
 
