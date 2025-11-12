@@ -16,12 +16,9 @@ steps:
       - apt update && apt install -y protobuf-compiler
       - rustup target add wasm32-wasip1
       - curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-      - curl -LsSf https://astral.sh/uv/install.sh | sh
-      - source $HOME/.local/bin/env
-      - cargo binstall wasmtime-cli uv
+      - cargo binstall wasmtime-cli
       - cargo test --release
       - cargo test --target wasm32-wasip1
-      - uv build
 
   build_python:
     image: rust:trixie
