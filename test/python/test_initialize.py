@@ -4,9 +4,9 @@
 
 import pytest
 from circle_of_confusion import (
+    Calculator,
     CameraData,
-    CircleOfConfusionCalculator,
-    CircleOfConfusionSettings,
+    Settings,
     initialize_calculator,
 )
 from circle_of_confusion._exception import CircleOfConfusionError
@@ -16,11 +16,11 @@ def test_initialize() -> None:
     """Test initialization of calculator."""
     focal_length = 51
     focal_plane = 20
-    settings = CircleOfConfusionSettings(
+    settings = Settings(
         camera_data=CameraData(focal_length=focal_length),
         focal_plane=focal_plane,
     )
-    calculator: CircleOfConfusionCalculator = CircleOfConfusionCalculator(settings)
+    calculator: Calculator = Calculator(settings)
 
     assert calculator._inner_calculator.settings.focal_plane == focal_plane
     assert (

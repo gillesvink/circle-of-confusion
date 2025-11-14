@@ -64,9 +64,9 @@ It's really simple to use, you need to assemble the settings to calculate the ci
 #### Python
 ```python
 from circle_of_confusion import (
-    CircleOfConfusionCalculator,
+    Calculator,
     calculate,
-    CircleOfConfusionSettings,
+    Settings,
     Math,
     CameraData,
     WorldUnit,
@@ -83,7 +83,7 @@ camera_data = CameraData(
     world_unit=WorldUnit.M,
     resolution=Resolution(width=1920, height=1080),
 )
-settings = CircleOfConfusionSettings(
+settings = Settings(
     size=10.0,
     max_size=100.0,
     math=Math.REAL,
@@ -92,7 +92,7 @@ settings = CircleOfConfusionSettings(
     pixel_aspect=1.0,
     camera_data=camera_data,
 )
-calculator = CircleOfConfusionCalculator(settings)
+calculator = Calculator(settings)
 result = calculate(calculator, 10.0)  # input distance value from Z-depth
 assert result == -11.93532943725586
 
@@ -100,7 +100,7 @@ assert result == -11.93532943725586
 
 #### Rust
 ```rust
-use circle_of_confusion::{CircleOfConfusionCalculator, CircleOfConfusionSettings, Math, CameraData, WorldUnit, Filmback, Resolution};
+use circle_of_confusion::{Calculator, Settings, Math, CameraData, WorldUnit, Filmback, Resolution};
 
 fn main() {
     let camera_data = CameraData {
@@ -112,7 +112,7 @@ fn main() {
         world_unit: WorldUnit::M.into(),
         resolution: Resolution { width: 1920, height: 1080 },
     };
-    let settings = CircleOfConfusionSettings {
+    let settings = Settings {
         size: 10.0,
         max_size: 100.0,
         math: Math::Real.into(),
@@ -121,7 +121,7 @@ fn main() {
         pixel_aspect: 1.0,
         camera_data: Some(camera_data),
     };
-    let calculator = CircleOfConfusionCalculator::new(settings);
+    let calculator = Calculator::new(settings);
     let result = calculator.calculate(10.0); // input distance value from Z-depth
     assert_eq!(result, -11.935329);
 }

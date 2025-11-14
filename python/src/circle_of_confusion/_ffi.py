@@ -31,7 +31,7 @@ _WASM_NAME: str = "circle_of_confusion.wasm"
 """Name of Wasm binary"""
 
 
-class CircleOfConfusionCalculator:
+class Calculator:
     """Calculator instance that is able to calculate the circle of confusion value.
 
     It holds the wasm instance including memory, so it is fast as it does not need to
@@ -40,9 +40,9 @@ class CircleOfConfusionCalculator:
 
     def __init__(
         self,
-        settings: circle_of_confusion_pb2.CircleOfConfusionSettings,
+        settings: circle_of_confusion_pb2.Settings,
     ) -> None:
-        if not isinstance(settings, circle_of_confusion_pb2.CircleOfConfusionSettings):
+        if not isinstance(settings, circle_of_confusion_pb2.Settings):
             msg = (
                 f"Provided settings is not a valid settings object: '{type(settings)}'"
             )
@@ -59,14 +59,12 @@ class CircleOfConfusionCalculator:
         result_size = initialize_calculator_wasm(self._store, len(settings_bytes))
         result = _get_result(self._store, self._memory, result_size)
 
-        self._inner_calculator = (
-            circle_of_confusion_pb2.CircleOfConfusionCalculator.FromString(
-                self._memory.read(
-                    self._store,
-                    _PTR_OFFSET,
-                    result.uint_value + _PTR_OFFSET,
-                ),
-            )
+        self._inner_calculator = circle_of_confusion_pb2.Calculator.FromString(
+            self._memory.read(
+                self._store,
+                _PTR_OFFSET,
+                result.uint_value + _PTR_OFFSET,
+            ),
         )
         self._size = result.uint_value
 
@@ -84,8 +82,8 @@ class CircleOfConfusionCalculator:
 
 
 def initialize_calculator(
-    settings: circle_of_confusion_pb2.CircleOfConfusionSettings,
-) -> CircleOfConfusionCalculator:
+    settings: circle_of_confusion_pb2.Settings,
+) -> Calculator:
     """Initialize the calculator based on the settings provided.
 
     Args:
@@ -95,7 +93,7 @@ def initialize_calculator(
         calculator instance able to calculate coc values
 
     """
-    return CircleOfConfusionCalculator(settings)
+    return Calculator(settings)
 
 
 def _get_result(
@@ -124,7 +122,7 @@ def _get_result(
     return result
 
 
-def calculate(calculator: CircleOfConfusionCalculator, distance: float) -> float:
+def calculate(calculator: Calculator, distance: float) -> float:
     """Calculate circle of confusion based on provided distance value.
 
     Args:
@@ -132,7 +130,7 @@ def calculate(calculator: CircleOfConfusionCalculator, distance: float) -> float
         distance: distance in world unit from camera
 
     """
-    if not isinstance(calculator, CircleOfConfusionCalculator):
+    if not isinstance(calculator, Calculator):
         msg = (
             "Provided Calculator is not a valid "
             f"Calculator object: '{type(calculator)}'"

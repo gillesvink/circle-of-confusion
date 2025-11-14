@@ -29,7 +29,7 @@ mod wasm {
     #[unsafe(no_mangle)]
     /// Get the max size of the Calculator object.
     pub extern "C" fn get_settings_size() -> usize {
-        size_of::<CircleOfConfusionSettings>()
+        size_of::<Settings>()
             + size_of::<CameraData>()
             + size_of::<Filmback>()
             + size_of::<Resolution>()
@@ -40,7 +40,7 @@ mod wasm {
     #[unsafe(no_mangle)]
     /// Get the max size of the Calculator object.
     pub extern "C" fn get_calculator_size() -> usize {
-        size_of::<CircleOfConfusionCalculator>() + size_of::<DepthOfField>() + get_settings_size()
+        size_of::<Calculator>() + size_of::<DepthOfField>() + get_settings_size()
     }
 
     #[unsafe(no_mangle)]
@@ -52,15 +52,15 @@ mod wasm {
     /// Wrapper for the inner calculator to work with results
     unsafe fn initialize_calculator_inner(
         settings_size: usize,
-    ) -> Result<CircleOfConfusionCalculator, FfiError> {
+    ) -> Result<Calculator, FfiError> {
         let address = PTR_OFFSET as *mut u8;
         let settings = unsafe {
             let data = core::slice::from_raw_parts(address, settings_size);
-            CircleOfConfusionSettings::decode(data)
+            Settings::decode(data)
         }
         .map_err(|_| FfiError::ProtoDecode)?;
 
-        let calculator = CircleOfConfusionCalculator::new(settings);
+        let calculator = Calculator::new(settings);
         let max_calculator_size = get_calculator_size();
         calculator
             .encode(&mut unsafe { core::slice::from_raw_parts_mut(address, max_calculator_size) })
@@ -95,7 +95,7 @@ mod wasm {
 
         let current_calculator = unsafe {
             let data = core::slice::from_raw_parts(ptr, calculator_size);
-            CircleOfConfusionCalculator::decode(data)
+            Calculator::decode(data)
         }
         .map_err(|_| FfiError::ProtoDecode)?;
 
@@ -122,11 +122,11 @@ mod wasm {
 pub use wasm::*;
 
 #[cfg(not(feature = "wasm-bindings"))]
-pub fn initialize_calculator(settings: CircleOfConfusionSettings) -> CircleOfConfusionCalculator {
-    CircleOfConfusionCalculator::new(settings)
+pub fn initialize_calculator(settings: Settings) -> Calculator {
+    Calculator::new(settings)
 }
 
 #[cfg(not(feature = "wasm-bindings"))]
-pub fn calculate(calculator: &CircleOfConfusionCalculator, value: f32) -> f32 {
+pub fn calculate(calculator: &Calculator, value: f32) -> f32 {
     calculator.calculate(value)
 }
