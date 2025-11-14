@@ -4,16 +4,16 @@
 
 from _circle_of_confusion.circle_of_confusion_pb2 import (
     CameraData,
+    CircleOfConfusionSettings,
     Filmback,
     Math,
     Resolution,
-    Settings,
     WorldUnit,
 )
 
 from circle_of_confusion._exception import CircleOfConfusionError
 from circle_of_confusion._ffi import (
-    Calculator,
+    CircleOfConfusionCalculator,
     calculate,
     initialize_calculator,
 )

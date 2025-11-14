@@ -1,6 +1,8 @@
-use crate::{Calculator, DepthOfField, Math, Settings, WorldUnit};
+use crate::{
+    CircleOfConfusionCalculator, CircleOfConfusionSettings, DepthOfField, Math, WorldUnit,
+};
 
-impl Calculator {
+impl CircleOfConfusionCalculator {
     /// Perform calculation based on the input value.
     ///
     /// This can be called upon a depth map for each pixel for example,
@@ -19,11 +21,11 @@ impl Calculator {
     }
 }
 
-impl Calculator {
+impl CircleOfConfusionCalculator {
     /// Create a new instance of the Calculator with the specified settings.
     ///
     /// Automatically calculates all necessary values for calculations.
-    pub fn new(settings: Settings) -> Self {
+    pub fn new(settings: CircleOfConfusionSettings) -> Self {
         let mut instance = Self::default();
         instance.settings = settings;
         instance.compute();
@@ -47,7 +49,7 @@ impl Calculator {
     ///
     /// More information can be found here:
     /// https://resources.wolframcloud.com/FormulaRepository/resources/Zeiss-Formula
-    fn calculate_zeiss_formula(settings: &Settings) -> f32 {
+    fn calculate_zeiss_formula(settings: &CircleOfConfusionSettings) -> f32 {
         let camera_data = match &settings.camera_data {
             Some(data) => data,
             None => return 1.0,
@@ -62,7 +64,7 @@ impl Calculator {
     ///
     /// More information:
     /// https://www.watchprosite.com/editors-picks/using-the-zeiss-formula-to-understand-the-circle-of-confusion/1278.1127636.8608906/
-    fn calculate_hyperfocal_distance(settings: &Settings) -> f32 {
+    fn calculate_hyperfocal_distance(settings: &CircleOfConfusionSettings) -> f32 {
         let camera_data = match &settings.camera_data {
             Some(data) => data,
             None => return 0.0, // for non-camera-data things we just use zero
@@ -221,7 +223,7 @@ mod tests {
     #[derive(Debug)]
     struct TestResult {
         #[allow(dead_code)]
-        pub settings: Settings,
+        pub settings: CircleOfConfusionSettings,
         #[allow(dead_code)]
         pub coc: f32,
         pub result: f32,
@@ -234,8 +236,8 @@ mod tests {
         }
     }
 
-    fn case_to_settings(case: &Value) -> Settings {
-        let mut settings = Settings::default();
+    fn case_to_settings(case: &Value) -> CircleOfConfusionSettings {
+        let mut settings = CircleOfConfusionSettings::default();
         if case["size"].is_f64() {
             settings.size = case["size"].as_f64().unwrap() as f32;
         }
@@ -278,7 +280,7 @@ mod tests {
             let settings = case_to_settings(&case["settings"]);
             let expected = case["expected"].as_f64().unwrap() as f32;
             let coc = case["coc"].as_f64().unwrap() as f32;
-            let calculator = Calculator::new(settings);
+            let calculator = CircleOfConfusionCalculator::new(settings);
             let result = calculator.calculate(coc);
             results.push(TestResult {
                 settings,

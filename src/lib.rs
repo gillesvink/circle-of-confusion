@@ -3,7 +3,7 @@
 
 mod calculator;
 mod datamodel {
-    include!(concat!(env!("OUT_DIR"), "/circle_of_confusion.data.rs"));
+    include!(concat!(env!("OUT_DIR"), "/circle_of_confusion.rs"));
 }
 
 pub use crate::datamodel::*;
@@ -12,7 +12,6 @@ pub use crate::datamodel::*;
 mod wasm {
     /// As wasm memory is linear, the memory starts at null. But this doesn't work well with LTO.
     const PTR_OFFSET: usize = 1;
-    
 
     use crate::ffi_result::ResultValue;
 
@@ -30,7 +29,7 @@ mod wasm {
     #[unsafe(no_mangle)]
     /// Get the max size of the Calculator object.
     pub extern "C" fn get_settings_size() -> usize {
-        size_of::<Settings>()
+        size_of::<CircleOfConfusionSettings>()
             + size_of::<CameraData>()
             + size_of::<Filmback>()
             + size_of::<Resolution>()
@@ -41,7 +40,7 @@ mod wasm {
     #[unsafe(no_mangle)]
     /// Get the max size of the Calculator object.
     pub extern "C" fn get_calculator_size() -> usize {
-        size_of::<Calculator>() + size_of::<DepthOfField>() + get_settings_size()
+        size_of::<CircleOfConfusionCalculator>() + size_of::<DepthOfField>() + get_settings_size()
     }
 
     #[unsafe(no_mangle)]
@@ -51,15 +50,17 @@ mod wasm {
     }
 
     /// Wrapper for the inner calculator to work with results
-    unsafe fn initialize_calculator_inner(settings_size: usize) -> Result<Calculator, FfiError> {
+    unsafe fn initialize_calculator_inner(
+        settings_size: usize,
+    ) -> Result<CircleOfConfusionCalculator, FfiError> {
         let address = PTR_OFFSET as *mut u8;
         let settings = unsafe {
             let data = core::slice::from_raw_parts(address, settings_size);
-            Settings::decode(data)
+            CircleOfConfusionSettings::decode(data)
         }
         .map_err(|_| FfiError::ProtoDecode)?;
 
-        let calculator = Calculator::new(settings);
+        let calculator = CircleOfConfusionCalculator::new(settings);
         let max_calculator_size = get_calculator_size();
         calculator
             .encode(&mut unsafe { core::slice::from_raw_parts_mut(address, max_calculator_size) })
@@ -94,7 +95,7 @@ mod wasm {
 
         let current_calculator = unsafe {
             let data = core::slice::from_raw_parts(ptr, calculator_size);
-            Calculator::decode(data)
+            CircleOfConfusionCalculator::decode(data)
         }
         .map_err(|_| FfiError::ProtoDecode)?;
 
@@ -121,11 +122,11 @@ mod wasm {
 pub use wasm::*;
 
 #[cfg(not(feature = "wasm-bindings"))]
-pub fn initialize_calculator(settings: Settings) -> Calculator {
-    Calculator::new(settings)
+pub fn initialize_calculator(settings: CircleOfConfusionSettings) -> CircleOfConfusionCalculator {
+    CircleOfConfusionCalculator::new(settings)
 }
 
 #[cfg(not(feature = "wasm-bindings"))]
-pub fn calculate(calculator: &Calculator, value: f32) -> f32 {
+pub fn calculate(calculator: &CircleOfConfusionCalculator, value: f32) -> f32 {
     calculator.calculate(value)
 }

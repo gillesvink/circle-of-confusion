@@ -9,8 +9,8 @@ import pytest
 from _pytest.python_api import ApproxBase
 from circle_of_confusion import (
     CameraData,
+    CircleOfConfusionSettings,
     Math,
-    Settings,
     calculate,
     initialize_calculator,
 )
@@ -22,12 +22,12 @@ CASES: Path = (Path(__file__).parent.parent / "cases.json").resolve()
 """Path to cases.json"""
 
 
-def _case_to_settings(settings_json: dict) -> Settings:
+def _case_to_settings(settings_json: dict) -> CircleOfConfusionSettings:
     """Parse the json into a settings object (quick and dirty implementaiton)."""
-    settings = Settings()
+    settings = CircleOfConfusionSettings()
 
     if settings_json.get("camera_data"):
-        settings = Settings(camera_data=CameraData())
+        settings = CircleOfConfusionSettings(camera_data=CameraData())
         if settings_json["camera_data"].get("focal_length"):
             settings.camera_data.focal_length = settings_json["camera_data"][
                 "focal_length"
@@ -35,7 +35,7 @@ def _case_to_settings(settings_json: dict) -> Settings:
         if settings_json["camera_data"].get("f_stop"):
             settings.camera_data.f_stop = settings_json["camera_data"]["f_stop"]
     else:
-        settings = Settings()
+        settings = CircleOfConfusionSettings()
     if settings_json.get("size"):
         settings.size = settings_json["size"]
     if settings_json.get("max_size"):
@@ -112,7 +112,7 @@ def test_calculation_with_no_float_provided() -> None:
         CircleOfConfusionError,
         match="No correct distance value provided: '<class 'NoneType'>'",
     ):
-        calculate(initialize_calculator(Settings()), None)  # ty: ignore[invalid-argument-type]
+        calculate(initialize_calculator(CircleOfConfusionSettings()), None)  # ty: ignore[invalid-argument-type]
 
 
 def test_calculation_with_nan_provided() -> None:
@@ -121,4 +121,4 @@ def test_calculation_with_nan_provided() -> None:
         CircleOfConfusionError,
         match="Provided distance is not a number",
     ):
-        calculate(initialize_calculator(Settings()), float("nan"))
+        calculate(initialize_calculator(CircleOfConfusionSettings()), float("nan"))

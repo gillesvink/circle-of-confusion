@@ -1,8 +1,6 @@
 syntax = "proto2";
 
-package circle_of_confusion.data;
-
-option java_outer_classname = "CircleOfConfusion";
+package circle_of_confusion;
 
 // Size of sensor
 message Filmback {
@@ -73,7 +71,7 @@ message CameraData {
 //
 // This struct contains all the parameters needed to calculate the circle of
 // confusion.
-message Settings {
+message CircleOfConfusionSettings {
   // Base size for circle of confusion
   required float size = 1 [ default = 5 ];
   // Maximum size for circle of confusion (clamped)
@@ -96,8 +94,8 @@ message DepthOfField {
   required float y = 2 [ default = 0 ];
 }
 
-message Calculator {
-  required Settings settings = 1;
+message CircleOfConfusionCalculator {
+  required CircleOfConfusionSettings settings = 1;
   required float internal_focus = 2;
   required float world_unit_multiplier = 3;
   required DepthOfField depth_of_field = 4;
