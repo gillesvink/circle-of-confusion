@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Other
 
-- Rename  settings to CircleOfConfusionSettings and Calculator as well to make naming unique
+- Rename settings to CircleOfConfusionSettings and Calculator to CircleOfConfusionCalculator for unique naming
 
 ## [0.2.1](https://codeberg.org/gillesvink/circle-of-confusion/compare/v0.2.0...v0.2.1) - 2025-11-12
 
