@@ -32,11 +32,13 @@ steps:
   test_python:
     image: ghcr.io/astral-sh/uv:trixie
     commands:
-      - uv run --isolated --no-project --with dist/*.whl --managed-python -p 3.9 --with pytest pytest
-      - uv run --isolated --no-project --with dist/*.whl --managed-python -p 3.10 --with pytest pytest
-      - uv run --isolated --no-project --with dist/*.whl --managed-python -p 3.11 --with pytest pytest
-      - uv run --isolated --no-project --with dist/*.whl --managed-python -p 3.12 --with pytest pytest
-      - uv run --isolated --no-project --with dist/*.whl --managed-python -p 3.13 --with pytest pytest
+      - uv run --isolated --no-project --with $(printf "%s[recommended]" dist/*.whl) --managed-python -p 3.9 --with pytest pytest
+      - uv run --isolated --no-project --with $(printf "%s[recommended]" dist/*.whl) --managed-python -p 3.10 --with pytest pytest
+      - uv run --isolated --no-project --with $(printf "%s[recommended]" dist/*.whl) --managed-python -p 3.11 --with pytest pytest
+      - uv run --isolated --no-project --with $(printf "%s[recommended]" dist/*.whl) --managed-python -p 3.12 --with pytest pytest
+      - uv run --isolated --no-project --with $(printf "%s[recommended]" dist/*.whl) --managed-python -p 3.13 --with pytest pytest
+      - uv run --isolated --no-project --with $(printf "%s[recommended]" dist/*.whl) --managed-python -p 3.14 --with pytest pytest
       - uv run --isolated --no-project --with dist/*.whl --managed-python -p 3.14 --with pytest pytest
+
 
       

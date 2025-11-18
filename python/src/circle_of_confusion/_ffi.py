@@ -6,16 +6,18 @@ from functools import lru_cache
 from pathlib import Path
 
 from _circle_of_confusion import circle_of_confusion_pb2
-from wasmtime import (
-    Func,
-    Instance,
+
+from circle_of_confusion._exception import CircleOfConfusionError
+from circle_of_confusion._wasm import (
     Memory,
     Module,
     Store,
 )
-from wasmtime._instance import InstanceExports
-
-from circle_of_confusion._exception import CircleOfConfusionError
+from circle_of_confusion._wasm.abstract import (
+    AbstractMemory,
+    AbstractModule,
+    AbstractStore,
+)
 
 _PTR_OFFSET: int = 1
 """Start address of data in wasm memory."""
@@ -48,15 +50,18 @@ class Calculator:
             )
             raise CircleOfConfusionError(msg)
         self._store = Store()
-        self._exports: InstanceExports = _initialize_wasm(self._store)
-        self._memory: Memory = self._exports["memory"]
-        initialize_calculator_wasm: Func = self._exports[_INITIALIZE_CALCULATOR]
+        self._exports = _initialize_wasm(self._store)
+        self._memory = Memory.from_module(self._exports, self._store)
 
         _set_memory_size(self._store, self._memory)
 
-        settings_bytes = settings.SerializePartialToString()
+        settings_bytes = bytearray(settings.SerializePartialToString())
         self._memory.write(self._store, settings_bytes, 1)
-        result_size = initialize_calculator_wasm(self._store, len(settings_bytes))
+        result_size = self._exports.run(
+            self._store,
+            _INITIALIZE_CALCULATOR,
+            [len(settings_bytes)],
+        )
         result = _get_result(self._store, self._memory, result_size)
 
         self._inner_calculator = circle_of_confusion_pb2.Calculator.FromString(
@@ -73,12 +78,16 @@ class Calculator:
         return self._store
 
     @property
-    def exports(self) -> InstanceExports:
+    def exports(self) -> AbstractModule:
         return self._exports
 
     @property
     def size(self) -> int:
         return self._size
+
+    @property
+    def memory(self) -> AbstractMemory:
+        return self._memory
 
 
 def initialize_calculator(
@@ -97,8 +106,8 @@ def initialize_calculator(
 
 
 def _get_result(
-    store: Store,
-    memory: Memory,
+    store: AbstractStore,
+    memory: AbstractMemory,
     result_size: int,
 ) -> circle_of_confusion_pb2.FFIResult:
     """Map the result from memory into a FFIResult object."""
@@ -146,16 +155,19 @@ def calculate(calculator: Calculator, distance: float) -> float:
         msg = "Provided distance is not a number"
         raise CircleOfConfusionError(msg)
 
-    memory: Memory = calculator.exports["memory"]
-    calculate_wasm: Func = calculator.exports[_CALCULATE]
+    memory: AbstractMemory = calculator.memory
 
-    result_size = calculate_wasm(calculator.store, distance, calculator.size)
+    result_size = calculator.exports.run(
+        calculator.store,
+        _CALCULATE,
+        [distance, calculator.size],
+    )
     result = _get_result(calculator.store, memory, result_size)
 
     return result.float_value
 
 
-def _set_memory_size(store: Store, memory: Memory) -> None:
+def _set_memory_size(store: Store, memory: AbstractMemory) -> None:
     """Set the memory size according to the page size of 64.
 
     It just gets the max size of calculator and result, and calcultes if memory
@@ -169,11 +181,9 @@ def _set_memory_size(store: Store, memory: Memory) -> None:
         memory.grow(store, memory_size - current_size)
 
 
-def _initialize_wasm(store: Store) -> InstanceExports:
+def _initialize_wasm(store: Store) -> AbstractModule:
     """Initialize the wasm runtime."""
-    module = Module.from_file(store.engine, _get_wasm_filepath())
-    instance = Instance(store, module, [])
-    return instance.exports(store)
+    return Module.from_file(store, _get_wasm_filepath())
 
 
 @lru_cache(maxsize=1)
@@ -192,8 +202,7 @@ def _get_calculator_size() -> int:
     """Get the max byte size of the `Calculator` for allocation purposes."""
     store = Store()
     exports = _initialize_wasm(store)
-    get_calculator_size: Func = exports[_GET_CALCULATOR_SIZE]
-    return get_calculator_size(store)
+    return exports.run(store, _GET_CALCULATOR_SIZE, [])
 
 
 @lru_cache(maxsize=1)
@@ -201,5 +210,4 @@ def _get_result_size() -> int:
     """Get the max byte size of the `FFIResult` for allocation purposes."""
     store = Store()
     exports = _initialize_wasm(store)
-    get_calculator_size: Func = exports[_GET_RESULT_SIZE]
-    return get_calculator_size(store)
+    return exports.run(store, _GET_RESULT_SIZE, [])

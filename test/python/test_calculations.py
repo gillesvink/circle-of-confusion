@@ -70,7 +70,6 @@ def test_calculations() -> None:
     test_cases = json.loads(CASES.read_text())
 
     results: list[Result] = []
-
     for test_case in test_cases:
         settings = _case_to_settings(test_case["settings"])
         calculator = initialize_calculator(settings)

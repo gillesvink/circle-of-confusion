@@ -11,7 +11,9 @@ steps:
       - rustup default stable && rustup target add wasm32-unknown-unknown
       - uv build
       - uv run --isolated --no-project --with dist/*.whl --with pytest pytest
+      - uv run --isolated --no-project --with $(printf "%s[recommended]" dist/*.whl) --with pytest pytest
       - uv run --isolated --no-project --with dist/*.tar.gz --with pytest pytest
+      - uv run --isolated --no-project --with $(printf "%s[recommended]" dist/*.tar.gz)  --with pytest pytest
       - uv publish --token $${PYPI_TOKEN}
     environment:
       PYPI_TOKEN:

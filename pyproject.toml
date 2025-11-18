@@ -7,13 +7,12 @@ name = "circle-of-confusion"
 requires-python = ">=3.9"
 classifiers = [
     'License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)',
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: MacOS",
-    "Operating System :: Microsoft :: Windows",
+    "Operating System :: OS Independent",
     "Programming Language :: Rust",
     "Environment :: WebAssembly",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: Implementation :: MicroPython",
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
@@ -34,8 +33,22 @@ maintainers = [
 ]
 dependencies = [
     "protobuf==6.33.0",
-    "wasmtime>=7.0.0",
+    "pywasm>=2.2.1",
 ]
+
+[dependency-groups]
+wasmtime = ["wasmtime>=7.0.02"]
+recommended = ["wasmtime"]
+dev = [
+    "pytest==8.1.1",
+    "pytest-readme>=1.0.2",
+    "ty>=0.0.1a26",
+]
+
+[project.optional-dependencies]
+recommended = ["wasmtime"]
+wasmtime = ["wasmtime"]
+
 
 [project.urls]
 Homepage = "https://codeberg.org/gillesvink/circle-of-confusion"
@@ -77,12 +90,6 @@ artifacts = [
 [tool.pytest.ini_options]
 pythonpath = ["build"]
 
-[dependency-groups]
-dev = [
-    "pytest==8.1.1",
-    "pytest-readme>=1.0.2",
-    "ty>=0.0.1a26",
-]
 [tool.ruff.lint]
 select = ["ALL"]
 
@@ -91,3 +98,4 @@ convention = "google"
 
 [tool.ty.rules]
 index-out-of-bounds = "ignore"
+

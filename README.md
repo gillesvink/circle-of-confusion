@@ -20,10 +20,13 @@ cargo add circle-of-confusion
 cargo add circle-of-confusion --features no-std
 ```
 
-Or in your Python project:
+Or in your Python project with a `wasmtime` runtime:
 ```bash
-uv add circle-of-confusion
+pip install circle-of-confusion[recommended]
 ```
+
+The wasmtime runtime is recommended by default, but is not supported on every platform. So as a fallback when no
+features are specified, it used pywasm to support any platform starting from Python 3.11. For 3.10 and 3.9 wasmtime is still necessary.
 
 To build yourself, you need to have protoc installed and Rust.
 For wasm packages you need to have the `wasm32-unknown-unknown` target installed.
