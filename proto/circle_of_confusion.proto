@@ -90,15 +90,22 @@ message Settings {
 }
 
 message DepthOfField {
+  // x
   required float x = 1 [ default = 0 ];
+  // y
   required float y = 2 [ default = 0 ];
 }
 
 message Calculator {
+  // CoC settings
   required Settings settings = 1;
+  // Focus point used for calculations
   required float internal_focus = 2;
+  // Multiplier unit to use for world unit conversion
   required float world_unit_multiplier = 3;
+  // Start and end value of DoF
   required DepthOfField depth_of_field = 4;
+  // Hyperfocal distance calculated value
   required float hyperfocal_distance = 5;
 }
 
@@ -114,10 +121,15 @@ enum FFIError {
 
 
 message FFIResult {
+  // return type of ffi call
   oneof ResultValue {
+    // Float value is returned
     float float_value = 2;
+    // An uint is returned
     uint32 uint_value = 3;
+    // An int is returned
     int32 int_value = 4;
+    // Call failed and error is returned
     FFIError error = 6;
   }
 }

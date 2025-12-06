@@ -21,12 +21,14 @@ std = []
 wasm-bindings = []
 serde = ["dep:serde"]
 compile-protobuf-src = ["dep:protobuf-src"]
+documented = ["dep:documented"]
 
 [dependencies]
 libm = ">=0.2.11, < 0.3"
 prost = { version = ">=0.14, < 0.15" }
 prost-types = { version = ">=0.14, < 0.15"}
 serde = { version = ">=1.0, < 1.1", features = ["derive"], optional = true}
+documented = {version = "0.9", optional = true}
 
 [dev-dependencies]
 rstest = "0.25.0"
