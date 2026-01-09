@@ -7,7 +7,7 @@ steps:
     image: ghcr.io/astral-sh/uv:trixie
     commands:
       - apt update
-      - apt install -y cmake rustup
+      - apt install -y cmake protobuf-compiler rustup
       - rustup default stable && rustup target add wasm32-unknown-unknown
       - uv build
       - uv run --isolated --no-project --with dist/*.whl --with pytest pytest
