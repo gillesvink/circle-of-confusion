@@ -13,7 +13,7 @@ steps:
   test_rust:
     image: rust:trixie
     commands:
-      - apt update && apt install -y protobuf-compiler
+      - apt update && apt install -y cmake
       - rustup target add wasm32-wasip1
       - curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
       - cargo binstall wasmtime-cli
@@ -23,7 +23,7 @@ steps:
   build_python:
     image: rust:trixie
     commands:
-      - apt update && apt install -y protobuf-compiler rustup
+      - apt update && apt install -y cmake rustup
       - rustup target add wasm32-unknown-unknown
       - curl -LsSf https://astral.sh/uv/install.sh | sh
       - . $HOME/.local/bin/env
